@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using AngleSharp;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
-
+using System.Linq;
 
 namespace SqdcWatcher
 {
     public class SqdcWebClient : ISqdcClient
     {
+        private const string BASE_DOMAIN = "https://sqdc.ca";
         private const string DEFAULT_LOCALE = "en-CA";
 
         private readonly RestClient client;
@@ -19,7 +20,7 @@ namespace SqdcWatcher
         {
             
             client = new RestClient();
-            client.BaseUrl = new Uri($"https://sqdc.ca/{DEFAULT_LOCALE}");
+            client.BaseUrl = new Uri($"{BASE_DOMAIN}/{DEFAULT_LOCALE}");
             client.AddDefaultHeader("User-Agent", "Sqdc Watcher");
             client.AddDefaultHeader("Accept", "application/json, text/javascript, */*; q=0.01");
 
@@ -32,12 +33,22 @@ namespace SqdcWatcher
             var completeList = new List<ProductSummary>();
             ProductPageResult pageResult;
             int currentPage = 1;
+            bool hasReachedEnd = false;
+
             do
             {
                 pageResult = await GetProductSummariesPage(currentPage);
-                completeList.AddRange(pageResult.Products);
+                if(pageResult.Products.Any())
+                {
+                    completeList.AddRange(pageResult.Products);
+                    currentPage++;
+                }
+                else
+                {
+                    hasReachedEnd = true;
+                }
             }
-            while (pageResult.HasNextPage);
+            while (!hasReachedEnd);
 
             return completeList;
         }
@@ -55,12 +66,12 @@ namespace SqdcWatcher
             var pageResult = new ProductPageResult(pageNumber);
             using (IDocument htmlDoc = await htmlContext.OpenAsync(req => req.Content(response.Content)))
             {
-                IHtmlCollection<IElement> productsElements = htmlDoc.DocumentElement.QuerySelectorAll("div.product-title");
+                IHtmlCollection<IElement> productsElements = htmlDoc.DocumentElement.QuerySelectorAll("div.product-tile");
                 foreach(IElement productElement in productsElements)
                 {
                     IElement titleAnchor = productElement.QuerySelector("a[data-qa=\"search-product-title\"]");
                     string title = titleAnchor.TextContent;
-                    string url = titleAnchor.GetAttribute("href");
+                    string url = BASE_DOMAIN + titleAnchor.GetAttribute("href");
                     string id = titleAnchor.GetAttribute("data-productid");
 
                     var productSummary = new ProductSummary
