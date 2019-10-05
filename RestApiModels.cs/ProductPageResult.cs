@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 
-namespace SqdcWatcher
+namespace SqdcWatcher.DataObjects
 {
     public class ProductPageResult
     {
         public int PageNumber { get; }
-        public List<ProductSummary> Products { get; }
+        public List<Product> Products { get; }
         public bool HasNextPage { get; set; }
 
         public ProductPageResult(int pageNumber)
         {
             PageNumber = pageNumber;
-            Products = new List<ProductSummary>();
+            Products = new List<Product>();
         }
     }
 }

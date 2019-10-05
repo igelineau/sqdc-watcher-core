@@ -5,32 +5,23 @@ using AngleSharp;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
 using System.Linq;
+using SqdcWatcher.DataObjects;
 
-namespace SqdcWatcher
+namespace SqdcWatcher.Services
 {
-    public class SqdcWebClient : ISqdcClient
+    public class SqdcWebClient : SqdcHttpClientBase, ISqdcClient
     {
-        private const string BASE_DOMAIN = "https://sqdc.ca";
-        private const string DEFAULT_LOCALE = "en-CA";
-
-        private readonly RestClient client;
         private readonly IBrowsingContext htmlContext;
 
-        public SqdcWebClient()
+        public SqdcWebClient() : base($"{BASE_DOMAIN}/{DEFAULT_LOCALE}")
         {
-            
-            client = new RestClient();
-            client.BaseUrl = new Uri($"{BASE_DOMAIN}/{DEFAULT_LOCALE}");
-            client.AddDefaultHeader("User-Agent", "Sqdc Watcher");
-            client.AddDefaultHeader("Accept", "application/json, text/javascript, */*; q=0.01");
-
             var htmlParserConfig = Configuration.Default;
             htmlContext = BrowsingContext.New(htmlParserConfig);
         }
 
-        public async Task<List<ProductSummary>> GetProductSummaries()
+        public async Task<List<Product>> GetProductSummaries()
         {
-            var completeList = new List<ProductSummary>();
+            var completeList = new List<Product>();
             ProductPageResult pageResult;
             int currentPage = 1;
             bool hasReachedEnd = false;
@@ -47,6 +38,8 @@ namespace SqdcWatcher
                 {
                     hasReachedEnd = true;
                 }
+
+                hasReachedEnd = true;
             }
             while (!hasReachedEnd);
 
@@ -74,7 +67,7 @@ namespace SqdcWatcher
                     string url = BASE_DOMAIN + titleAnchor.GetAttribute("href");
                     string id = titleAnchor.GetAttribute("data-productid");
 
-                    var productSummary = new ProductSummary
+                    var productSummary = new Product
                     {
                         Id = id,
                         Title = title,

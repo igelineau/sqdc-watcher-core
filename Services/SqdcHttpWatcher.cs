@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
+using SqdcWatcher.DataObjects;
 
-namespace SqdcWatcher
+namespace SqdcWatcher.Services
 {
     internal enum WatcherStatus
     {
@@ -15,14 +15,16 @@ namespace SqdcWatcher
     
     public class SqdcHttpWatcher : ISqdcWatcher
     {
-        private readonly ISqdcClient sqdClient;
+        private readonly SqdcProductsFetcher productsFetcher;
+        private readonly ProductsPersister productsPersister;
         private WatcherStatus status;
 
-        public SqdcHttpWatcher(ISqdcClient sqdcClient)
+        public SqdcHttpWatcher(SqdcProductsFetcher productsFetcher, ProductsPersister productsPersister)
         {
-            this.sqdClient = sqdcClient;
+            this.productsFetcher = productsFetcher;
+            this.productsPersister = productsPersister;
         }
-
+        
         public void start(CancellationToken cancellationToken)
         {
             if(status == WatcherStatus.Running || status == WatcherStatus.Stopping)
@@ -31,16 +33,17 @@ namespace SqdcWatcher
             }
 
             status = WatcherStatus.Running;
-            Task.Run(async () => await loop(cancellationToken), cancellationToken).Wait();
+            Task.Run(async () => await Loop(cancellationToken), cancellationToken).Wait();
         }
 
-        private async Task loop(CancellationToken cancelToken)
+        private async Task Loop(CancellationToken cancelToken)
         {
             while(!cancelToken.IsCancellationRequested)
             {
-                List<ProductSummary> products = await sqdClient.GetProductSummaries();
+                List<Product> products = await productsFetcher.GetProducts();
+                productsPersister.PersistMergeProducts(products);
 
-                Console.WriteLine(SqdcFormatter.FormatProductsSummaries(products, ProductFormatStyle.Table));
+                //Console.WriteLine(SqdcFormatter.FormatProductsSummaries(products, ProductFormatStyle.Table));
                 Console.WriteLine($"Found {products.Count} products");
 
                 Console.WriteLine("Waiting 15 minutes until next execution");

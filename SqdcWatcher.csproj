@@ -5,11 +5,17 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="anglesharp" Version="0.13.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.0.0" />
+    <PackageReference Include="Newtonsoft.json" Version="12.0.2" />
     <PackageReference Include="restsharp" Version="106.6.10" />
+    <PackageReference Include="servicestack.ormlite.sqlite.core" Version="5.7.0" />
   </ItemGroup>
 
 </Project>

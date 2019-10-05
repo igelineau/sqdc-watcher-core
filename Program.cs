@@ -1,7 +1,11 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using ServiceStack.Data;
+using ServiceStack.OrmLite;
+using SqdcWatcher.Services;
 
 namespace SqdcWatcher
 {
@@ -10,7 +14,7 @@ namespace SqdcWatcher
         private static ServiceProvider serviceProvider;
         private static CancellationTokenSource cancelTokenSource;
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             RegisterServices();
 
@@ -22,9 +26,24 @@ namespace SqdcWatcher
         private static void RegisterServices()
         {
             var collection = new ServiceCollection();
-
+         
+            collection.AddSingleton<SqdcRestApiClient>();
+            collection.AddSingleton<SqdcWebClient>();
+            collection.AddSingleton<SqdcProductsFetcher>();
+            collection.AddSingleton<ProductsPersister>();
             collection.AddSingleton<ISqdcWatcher, SqdcHttpWatcher>();
-            collection.AddSingleton<ISqdcClient, SqdcWebClient>();
+            collection.AddSingleton<DataAccess>();
+            
+            string databasePath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "sqdc-watcher",
+                "store.db");
+            if(!Directory.Exists(Path.GetDirectoryName(databasePath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(databasePath));
+            }
+            collection.AddSingleton<IDbConnectionFactory>(
+                c => new OrmLiteConnectionFactory(databasePath, SqliteDialect.Provider));
 
             serviceProvider =  collection.BuildServiceProvider();
         }

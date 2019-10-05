@@ -1,20 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using SqdcWatcher.DataObjects;
 
 namespace SqdcWatcher
 {
     internal class SqdcFormatter
     {
-        internal static bool FormatProducts(List<SqdcProduct> products, ProductFormatStyle table)
+        internal static bool FormatProducts(List<Product> products, ProductFormatStyle table)
         {
             throw new NotImplementedException();
         }
 
-        internal static string FormatProductsSummaries(List<ProductSummary> products, ProductFormatStyle table)
+        internal static string FormatProductsSummaries(List<Product> products, ProductFormatStyle table)
         {
             StringBuilder sb = new StringBuilder();
-            foreach(ProductSummary product in products)
+            foreach(Product product in products)
             {
                 sb.AppendLine($"id= {product.Id}, title= {product.Title}, url= {product.Url}");
             }

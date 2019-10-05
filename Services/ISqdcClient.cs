@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SqdcWatcher.DataObjects;
 
 namespace SqdcWatcher
 {
     public interface ISqdcClient
     {
-        Task<List<ProductSummary>> GetProductSummaries();
+        Task<List<Product>> GetProductSummaries();
     }
 }
