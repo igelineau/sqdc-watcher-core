@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Alba.CsConsoleFormat;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Serialization.Json;
@@ -22,13 +24,31 @@ namespace SqdcWatcher.Services
             return await ExecutePostAsync<VariantsPricesResponse>("product/calculatePrices", new { products = productIds });
         }
 
+        public async Task<List<string>> GetInventoryItems(IEnumerable<string> variantsIds)
+        {
+            return await ExecutePostAsync<List<string>>("inventory/findInventoryItems", new {skus = variantsIds});
+        }
+
+        public async Task<SpecificationsResponse> GetSpecifications(string productId, string variantId)
+        {
+            return await ExecutePostAsync<SpecificationsResponse>("product/specifications",
+                new {productId = productId, variantId = variantId});
+        }
+
         private async Task<TResponseBody> ExecutePostAsync<TResponseBody>(string resource, object body) where TResponseBody : new()
         {
             var request = new RestRequest(resource, Method.POST, DataFormat.Json);
+            Console.WriteLine($"POST => {resource}");
             request.AddJsonBody(body);
-            return await client.PostAsync<TResponseBody>(request);
+            IRestResponse<TResponseBody> response = await client.ExecutePostTaskAsync<TResponseBody>(request);
+            if (response.IsSuccessful)
+            {
+                return response.Data;
+            }
+            
+            throw new SqdcHttpClientException((response.Data as BaseResponse)?.Message ?? response.ErrorMessage, response.ErrorException);
         }
-        
+
         private void LogRequest(IRestRequest request, IRestResponse response, long durationMs)
         {
             var requestToLog = new

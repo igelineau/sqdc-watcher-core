@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AngleSharp.Dom;
 using System.Linq;
 using SqdcWatcher.DataObjects;
+using SqdcWatcher.RestApiModels.cs;
 
 namespace SqdcWatcher.Services
 {
@@ -19,17 +20,16 @@ namespace SqdcWatcher.Services
             htmlContext = BrowsingContext.New(htmlParserConfig);
         }
 
-        public async Task<List<Product>> GetProductSummaries()
+        public async Task<List<ProductDto>> GetProductSummaries()
         {
-            var completeList = new List<Product>();
-            ProductPageResult pageResult;
+            var completeList = new List<ProductDto>();
             int currentPage = 1;
             bool hasReachedEnd = false;
 
             do
             {
-                pageResult = await GetProductSummariesPage(currentPage);
-                if(pageResult.Products.Any())
+                ProductPageResult pageResult = await GetProductSummariesPage(currentPage);
+                if (pageResult.Products.Any())
                 {
                     completeList.AddRange(pageResult.Products);
                     currentPage++;
@@ -39,9 +39,7 @@ namespace SqdcWatcher.Services
                     hasReachedEnd = true;
                 }
 
-                hasReachedEnd = true;
-            }
-            while (!hasReachedEnd);
+            } while (!hasReachedEnd);
 
             return completeList;
         }
@@ -52,7 +50,7 @@ namespace SqdcWatcher.Services
             request.AddQueryParameter("SortDirection", "asc");
             request.AddQueryParameter("page", pageNumber.ToString());
             request.AddQueryParameter("keywords", "*");
-            
+
             IRestResponse response = await client.ExecuteTaskAsync(request);
             CheckResponseSuccess(response);
 
@@ -60,18 +58,23 @@ namespace SqdcWatcher.Services
             using (IDocument htmlDoc = await htmlContext.OpenAsync(req => req.Content(response.Content)))
             {
                 IHtmlCollection<IElement> productsElements = htmlDoc.DocumentElement.QuerySelectorAll("div.product-tile");
-                foreach(IElement productElement in productsElements)
+                foreach (IElement productElement in productsElements)
                 {
                     IElement titleAnchor = productElement.QuerySelector("a[data-qa=\"search-product-title\"]");
                     string title = titleAnchor.TextContent;
+
+                    IElement brandElement = productElement.QuerySelector("div[class=\"js-equalized-brand\"]");
+                    string brand = brandElement.TextContent;
+                    
                     string url = BASE_DOMAIN + titleAnchor.GetAttribute("href");
                     string id = titleAnchor.GetAttribute("data-productid");
 
-                    var productSummary = new Product
+                    var productSummary = new ProductDto
                     {
                         Id = id,
                         Title = title,
-                        Url = url
+                        Url = url,
+                        Brand = brand
                     };
                     pageResult.Products.Add(productSummary);
                 }
@@ -84,7 +87,7 @@ namespace SqdcWatcher.Services
 
         private void CheckResponseSuccess(IRestResponse response, string exceptionMessage)
         {
-            if(!response.IsSuccessful)
+            if (!response.IsSuccessful)
             {
                 throw new SqdcHttpClientException(exceptionMessage, response.ErrorException);
             }

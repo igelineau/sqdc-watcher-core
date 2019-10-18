@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using SqdcWatcher.RestApiModels.cs;
 
 namespace SqdcWatcher.DataObjects
 {
     public class ProductCopier
     {
-        public static bool CopyAllSimpleProperties(Product source, Product destination)
+        public static bool CopyAllSimpleProperties(Product destination, ProductDto source)
         {
             bool hasChanged = false;
             IEnumerable<PropertyInfo> publicProperties = typeof(Product)
@@ -23,14 +24,14 @@ namespace SqdcWatcher.DataObjects
         }
 
         
-        public static bool CopyPropertyValue(Product source, Product destination, Expression<Func<Product, object>> propertySelector)
+        public static bool CopyPropertyValue(ProductDto source, Product destination, Expression<Func<Product, object>> propertySelector)
         {
             var memberExpression = (MemberExpression) propertySelector.Body;
             var propertyInfo = (PropertyInfo) memberExpression.Member;
             return CopyPropertyValue(source, destination, propertyInfo);
         }
 
-        public static bool CopyPropertyValue(Product source, Product destination, PropertyInfo property)
+        public static bool CopyPropertyValue(ProductDto source, Product destination, PropertyInfo property)
         {
             object sourceValue = property.GetValue(source);
             object destinationValue = property.GetValue(destination);
