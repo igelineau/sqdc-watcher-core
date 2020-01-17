@@ -30,13 +30,16 @@ namespace SqdcWatcher.Services
             this.logger = logger;
         }
 
-        public async Task<ProductsListResult> FetchProductsFromApi(GetProductsInfoDto infoDto, CancellationToken cancelToken)
+        public async Task<ProductsListResult> FetchProductsFromApi(
+            GetProductsInfoDto infoDto,
+             CancellationToken cancelToken,
+             bool forceFullRefresh)
         {
             Stopwatch sw = Stopwatch.StartNew();
             Dictionary<string, ProductDto> products;
 
             DateTime lastProductsListScan = sqdcDataAccess.GetLastProductsListUpdateTimestamp();
-            bool willDoFullRefresh = DateTime.Now - lastProductsListScan > refreshProductsListInterval; 
+            bool willDoFullRefresh = forceFullRefresh || DateTime.Now - lastProductsListScan > refreshProductsListInterval; 
             if (willDoFullRefresh)
             {
                 logger.LogInformation("Updating Products List from SQDC Website...");

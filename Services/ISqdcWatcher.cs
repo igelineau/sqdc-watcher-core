@@ -5,7 +5,7 @@ namespace SqdcWatcher.Services
     public interface ISqdcWatcher
     {
         void Start(CancellationToken cancelToken);
-        void RequestRefresh();
+        void RequestRefresh(bool forceFullRefresh = false);
         WatcherState State { get; }
     }
 }

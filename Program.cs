@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -54,9 +55,13 @@ namespace SqdcWatcher
                     while (!cancelTokenSource.IsCancellationRequested)
                     {
                         ConsoleKeyInfo key = Console.ReadKey();
-                        if (key.Modifiers == 0 && key.Key == ConsoleKey.F5)
+                        if (key.Key == ConsoleKey.F5)
                         {
                             watcher.RequestRefresh();
+                        }
+                        else if(key.Key == ConsoleKey.F17)
+                        {
+                            watcher.RequestRefresh(true);
                         }
                         else if (key.Modifiers == ConsoleModifiers.Control && key.Key == ConsoleKey.C)
                         {
@@ -126,6 +131,8 @@ namespace SqdcWatcher
                 .WriteTo.File(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), CONFIG_DIR_NAME, "logs", "all.log"),
                     LogEventLevel.Information)
                 .CreateLogger()));
+
+            //Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
         }
 
         private static void RegisterAllImplementationsOfType(ServiceCollection collection, Type baseType)

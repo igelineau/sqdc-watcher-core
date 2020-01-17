@@ -1,5 +1,6 @@
 using System;
 using RestSharp;
+using rs = RestSharp;
 
 namespace SqdcWatcher.Services
 {
@@ -8,11 +9,11 @@ namespace SqdcWatcher.Services
         public const string BASE_DOMAIN = "https://www.sqdc.ca";
         public const string DEFAULT_LOCALE = "en-CA";
 
-        protected readonly RestClient client;
+        protected readonly rs.RestClient client;
 
         public SqdcHttpClientBase(string baseUrl)
         {
-            client = new RestClient
+            client = new rs.RestClient
             {
                 BaseUrl = new Uri(baseUrl)
             };
@@ -24,6 +25,11 @@ namespace SqdcWatcher.Services
             client.AddDefaultHeader("Accept-Language", DEFAULT_LOCALE);
             client.AddDefaultHeader("Accept-Encoding", "gzip,deflate,br");
             client.AutomaticDecompression = true;
+        }
+
+        protected void AddDefaultRequestHeader(string name, string value)
+        {
+            client.AddDefaultHeader(name, value);
         }
     }
 }

@@ -33,6 +33,7 @@ namespace SqdcWatcher.Services
         
         private bool isRefreshRequested;
         private bool isRefreshInProgress;
+        private bool isFullRefreshRequested;
 
         public SqdcHttpWatcher(
             ILogger<SqdcHttpWatcher> logger,
@@ -77,7 +78,7 @@ namespace SqdcWatcher.Services
             }, CancellationToken.None);
         }
 
-        public void RequestRefresh()
+        public void RequestRefresh(bool fullRefresh = false)
         {
             if (isRefreshInProgress)
             {
@@ -85,7 +86,8 @@ namespace SqdcWatcher.Services
             }
             else
             {
-                isRefreshRequested = true;   
+                isRefreshRequested = true;
+                isFullRefreshRequested = fullRefresh;
             }
         }
         
@@ -107,6 +109,10 @@ namespace SqdcWatcher.Services
                 {
                     logger.LogError(e, "Error while executing scan within the watcher loop");
                 }
+                finally
+                {
+                    isFullRefreshRequested = false;
+                }
                 
                 DateTime nextExecutionTime = DateTime.Now + loopInterval;
                 logger.LogInformation(
@@ -125,7 +131,10 @@ namespace SqdcWatcher.Services
                     .SelectMany(v => v.Variants.Where(var => var.HasSpecifications()))
                     .Select(v => v.Id))
             };
-            ProductsListResult apiFetchResult = await productsFetcher.FetchProductsFromApi(getProductsInfoDto, cancelToken);
+            ProductsListResult apiFetchResult = await productsFetcher.FetchProductsFromApi(
+                getProductsInfoDto,
+                cancelToken,
+                isFullRefreshRequested);
             cancelToken.ThrowIfCancellationRequested();
 
             List<ProductDto> apiProducts = apiFetchResult.Products.Values.ToList();

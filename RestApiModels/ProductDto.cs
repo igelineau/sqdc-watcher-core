@@ -17,5 +17,7 @@ namespace SqdcWatcher.RestApiModels
         {
             Variants = new List<ProductVariantDto>();
         }
+
+        public override string ToString() => $"Product Id= {Id}, Title={Title}, Brand={Brand}";
     }
 }

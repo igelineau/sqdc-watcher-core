@@ -1,17 +1,18 @@
 using Microsoft.Extensions.Options;
 using RestSharp;
+using rs = RestSharp;
 
 namespace SqdcWatcher.Services
 {
     public class SlackPostWebHookClient
     {
         private readonly SqdcAppConfiguration config;
-        private RestClient client;
+        private rs.RestClient client;
 
         public SlackPostWebHookClient(IOptions<SqdcAppConfiguration> config)
         {
             this.config = config.Value;
-            client = new RestClient("https://hooks.slack.com");
+            client = new rs.RestClient("https://hooks.slack.com");
         }
 
         public void PostToSlack(string message)

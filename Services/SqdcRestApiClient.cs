@@ -4,13 +4,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Alba.CsConsoleFormat;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using RestSharp;
-using RestSharp.Serialization.Json;
-using SqdcWatcher.DataObjects;
 using SqdcWatcher.RestApiModels;
+using RestSharp;
+using System.Text.Json;
 
 namespace SqdcWatcher.Services
 {
@@ -22,9 +19,9 @@ namespace SqdcWatcher.Services
         {
             this.logger = logger;
             
-            client.AddDefaultHeader("Accept", "application/json, text/javascript, */*; q=0.01");
-            client.AddDefaultHeader("X-Requested-With", "XMLHttpRequest");
-            client.AddDefaultHeader("Content-Type", "application/json; charset=utf-8");
+            AddDefaultRequestHeader("Accept", "application/json, text/javascript, */*; q=0.01");
+            AddDefaultRequestHeader("X-Requested-With", "XMLHttpRequest");
+            AddDefaultRequestHeader("Content-Type", "application/json; charset=utf-8");
         }
 
         public async Task<VariantsPricesResponse> GetVariantsPrices(IEnumerable<string> productIds, CancellationToken cancelToken)
@@ -52,6 +49,7 @@ namespace SqdcWatcher.Services
             IRestResponse<TResponseBody> response = await client.ExecutePostTaskAsync<TResponseBody>(request, cancelToken);
             
             logger.Log(LogLevel.Information, $"POST {sw.ElapsedMilliseconds}ms {resource}");
+            LogRequest(request, response, sw.ElapsedMilliseconds);
             if (response.IsSuccessful)
             {
                 
@@ -90,10 +88,10 @@ namespace SqdcWatcher.Services
                 errorMessage = response.ErrorMessage,
             };
 
-            Trace.Write(string.Format("Request completed in {0} ms, Request: {1}, Response: {2}",
+            Trace.Write(string.Format("Request completed in {0} ms\nRequest: {1}\nResponse: {2}",
                 durationMs, 
-                JsonConvert.SerializeObject(requestToLog),
-                JsonConvert.SerializeObject(responseToLog)));
+                JsonSerializer.Serialize(requestToLog),
+                JsonSerializer.Serialize(responseToLog)));
         }
     }
 }

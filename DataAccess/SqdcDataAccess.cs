@@ -48,7 +48,10 @@ namespace SqdcWatcher.DataAccess
                     product = p;
                 }
 
-                product.AddOrGetVariant(pv);
+                if(pv.Id > 0)
+                {
+                    product.AddOrGetVariant(pv);
+                }                
             }
 
             return finalResults.Values.ToList();

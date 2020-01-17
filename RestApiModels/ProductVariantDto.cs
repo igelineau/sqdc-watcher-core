@@ -12,5 +12,7 @@ namespace SqdcWatcher.RestApiModels
         public ProductDto Product { get; set; }
         public bool InStock { get; set; }
         public ProductVariantPrice PriceInfo { get; set; }
+
+        public override string ToString() => $"{Product} / VariantId={Id}";
     }
 }

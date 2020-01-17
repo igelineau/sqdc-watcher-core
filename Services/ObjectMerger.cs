@@ -25,7 +25,7 @@ namespace SqdcWatcher.Services
         
         public static void MergeListById<TTarget, TSource> (
             this ICollection<TTarget> destination,
-            ICollection<TSource> source,
+            IEnumerable<TSource> source,
             Expression<Func<TTarget, object>> idSelector) where TTarget: new()
         {
             PropertyInfo targetIdProp = UnwrapPropertyExpression(idSelector);
