@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using SqdcWatcher.DataObjects;
 
-namespace SqdcWatcher.DataObjects
+namespace SqdcWatcher.RestApiModels
 {
     public class ProductPrice
     {

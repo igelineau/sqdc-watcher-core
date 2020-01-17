@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using SqdcWatcher.DataObjects;
 
-namespace SqdcWatcher.RestApiModels.cs
+namespace SqdcWatcher.RestApiModels
 {
     public class ProductPageResult
     {

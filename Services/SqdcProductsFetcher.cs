@@ -1,10 +1,15 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using SqdcWatcher.DataAccess;
 using SqdcWatcher.DataObjects;
 using SqdcWatcher.Dto;
-using SqdcWatcher.RestApiModels.cs;
+using SqdcWatcher.RestApiModels;
 
 namespace SqdcWatcher.Services
 {
@@ -14,78 +19,100 @@ namespace SqdcWatcher.Services
         
         private readonly SqdcWebClient htmlClient;
         private readonly SqdcRestApiClient restClient;
-        private readonly DataAccess dataAccess;
+        private readonly SqdcDataAccess sqdcDataAccess;
+        private readonly ILogger<SqdcProductsFetcher> logger;
 
-        public SqdcProductsFetcher(SqdcWebClient htmlClient, SqdcRestApiClient restClient, DataAccess dataAccess)
+        public SqdcProductsFetcher(SqdcWebClient htmlClient, SqdcRestApiClient restClient, SqdcDataAccess sqdcDataAccess, ILogger<SqdcProductsFetcher> logger)
         {
             this.htmlClient = htmlClient;
             this.restClient = restClient;
-            this.dataAccess = dataAccess;
+            this.sqdcDataAccess = sqdcDataAccess;
+            this.logger = logger;
         }
 
-        public async Task<ProductsListResult> FetchProductsFromApi(GetProductsInfoDto infoDto)
+        public async Task<ProductsListResult> FetchProductsFromApi(GetProductsInfoDto infoDto, CancellationToken cancelToken)
         {
+            Stopwatch sw = Stopwatch.StartNew();
             Dictionary<string, ProductDto> products;
 
-            DateTime lastProductsListScan = dataAccess.GetLastProductsListUpdateTimestamp();
-            bool mustFetchProductsSummariesFromApi = DateTime.Now - lastProductsListScan > refreshProductsListInterval; 
-            if (mustFetchProductsSummariesFromApi)
+            DateTime lastProductsListScan = sqdcDataAccess.GetLastProductsListUpdateTimestamp();
+            bool willDoFullRefresh = DateTime.Now - lastProductsListScan > refreshProductsListInterval; 
+            if (willDoFullRefresh)
             {
-                Console.WriteLine("Updating Products List from SQDC Website...");
-                products = (await htmlClient.GetProductSummaries()).ToDictionary(p => p.Id);                
+                logger.LogInformation("Updating Products List from SQDC Website...");
+                products = await htmlClient.GetProductSummaries(cancelToken);
+                
+                cancelToken.ThrowIfCancellationRequested();
+                VariantsPricesResponse pricesResponse = await restClient.GetVariantsPrices(products.Keys, cancelToken);
+                MergeVariantsIntoProducts(products, pricesResponse.ProductPrices);
             }
             else
             {
-                Console.WriteLine("Using Product List cached from the local DB...");
+                logger.LogInformation("Using Product List cached from the local DB...");
                 products = LoadProductsListFromCachedDatabase();
             }
             
-            VariantsPricesResponse pricesResponse = await restClient.GetVariantsPrices(products.Keys);
-            MergeVariantsIntoProducts(products, pricesResponse.ProductPrices);
-
             Dictionary<string, ProductVariantDto> variantsMap =
                 products.Values.SelectMany(p => p.Variants).ToDictionary(v => v.Id.ToString());
-            
-            await UpdateInStockStatuses(variantsMap);
+
+            cancelToken.ThrowIfCancellationRequested();
+            await UpdateInStockStatuses(variantsMap, cancelToken);
 
             List<ProductVariantDto> variantsToUpdateSpecs = variantsMap.Values.Where(v => !infoDto.VariantsWithUpToDateSpecs.Contains(v.Id)).ToList();
-            await FetchVariantsSpecifications(variantsToUpdateSpecs);
+            await FetchVariantsSpecifications(variantsToUpdateSpecs, cancelToken);
 
+            logger.LogInformation($"Products fetched from the API in {Math.Round(sw.Elapsed.TotalSeconds, 1)}s");
             return new ProductsListResult
             {
                 Products = products,
-                RemoteFetchPerformed = mustFetchProductsSummariesFromApi
+                RemoteFetchPerformed = willDoFullRefresh
             };
         }
 
         private Dictionary<string, ProductDto> LoadProductsListFromCachedDatabase()
         {
-            List<Product> allDbProducts = dataAccess.GetProductsSummary();
-            return allDbProducts.Select(dbProd => new ProductDto
+            List<Product> allDbProducts = sqdcDataAccess.GetProductsSummary();
+            return allDbProducts.Select(dbProd =>
             {
-                Id = dbProd.Id,
-                Title = dbProd.Title,
-                Brand = dbProd.Brand,
-                Url = dbProd.Url
+                var prodDto = new ProductDto
+                {
+                    Id = dbProd.Id,
+                    Title = dbProd.Title,
+                    Brand = dbProd.Brand,
+                    Url = dbProd.Url
+                };
+                prodDto.Variants.MergeListById(dbProd.Variants, o => o.Id);
+                foreach (ProductVariantDto pv in prodDto.Variants)
+                {
+                    pv.Product = prodDto;
+                }
+                return prodDto;
             }).ToDictionary(p => p.Id);
         }
 
-        private async Task FetchVariantsSpecifications(List<ProductVariantDto> variants)
+        private async Task FetchVariantsSpecifications(List<ProductVariantDto> variants, CancellationToken cancelToken)
         {
             foreach (ProductVariantDto variant in variants)
             {
-                Console.WriteLine($"Fetching specifications for productId={variant.Product.Id}, variantId={variant.Id}");
-                SpecificationsResponse response =
-                    await restClient.GetSpecifications(variant.Product.Id, variant.Id.ToString());
-                List<SpecificationAttributeDto> attributes = response.Groups.SelectMany(g => g.Attributes).ToList();
-                attributes.ForEach(a => a.ProductVariant = variant);
-                variant.Specifications = attributes;
+                logger.LogInformation($"Fetching specifications for productId={variant.Product.Id}, variantId={variant.Id}");
+                try
+                {
+                    SpecificationsResponse response =
+                        await restClient.GetSpecifications(variant.Product.Id, variant.Id.ToString(), cancelToken);
+                    List<SpecificationAttributeDto> attributes = response.Groups.SelectMany(g => g.Attributes).ToList();
+                    attributes.ForEach(a => a.ProductVariant = variant);
+                    variant.Specifications = attributes;
+                }
+                catch(Exception ex)
+                {
+                    logger.LogError(ex, $"Error fetching or parsing the specifications of {variant}");
+                }
             }
         }
 
-        private async Task UpdateInStockStatuses(Dictionary<string, ProductVariantDto> variants)
+        private async Task UpdateInStockStatuses(Dictionary<string, ProductVariantDto> variants, CancellationToken cancelToken)
         {
-            List<string> variantsInStock = await restClient.GetInventoryItems(variants.Keys);
+            List<string> variantsInStock = await restClient.GetInventoryItems(variants.Keys, cancelToken);
             variantsInStock.ForEach(vId => variants[vId].InStock = true);
         }
 

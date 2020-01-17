@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using SqdcWatcher.DataObjects;
+using SqdcWatcher.RestApiModels;
 using SqdcWatcher.Services;
 
-namespace SqdcWatcher.RestApiModels.cs
+namespace SqdcWatcher.RestApiModels
 {
     public class ProductVariantDto
     {

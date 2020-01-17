@@ -8,10 +8,11 @@ namespace SqdcWatcher.DataObjects
 {
     public class ProductVariant
     {
-        public ProductVariant()
-        {
-            Specifications = new List<SpecificationAttribute>();
-        }
+        [Ignore]
+        public ProductVariantMetaData MetaData { get; private set; } = new ProductVariantMetaData { WasFetched = false };
+
+        [Ignore]
+        public bool HasMetaData => MetaData != null;
 
         public long Id { get; set; }
 
@@ -20,18 +21,27 @@ namespace SqdcWatcher.DataObjects
 
         public string ProductId { get; set; }
 
-        public ProductVariantPrice PriceInfo { get; set; }
-
         public bool InStock { get; set; }
 
         public double GramEquivalent { get; set; }
 
         [Reference]
         public List<SpecificationAttribute> Specifications { get; set; }
+        
+        public DateTime LastInStockTimestamp { get; set; }
+
+        public double PricePerGram { get; set; }
+        public double DisplayPrice { get; set; }
+        public double ListPrice { get; set; }
+        
+        public ProductVariant()
+        {
+            Specifications = new List<SpecificationAttribute>();
+        }
 
         public string GetDisplayQuantity()
         {
-            return GramEquivalent != 0 ? $"{GramEquivalent}g" : "";
+            return Math.Abs(GramEquivalent) > 0.0001 ? $"{GramEquivalent}g" : "";
         }
 
         private string GetSpecification(string propertyName)
@@ -67,6 +77,11 @@ namespace SqdcWatcher.DataObjects
         internal bool HasSpecifications()
         {
             return Specifications.Any();
+        }
+
+        public void SetMetaData(ProductVariantMetaData metaData)
+        {
+            MetaData = metaData;
         }
     }
 }

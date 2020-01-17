@@ -1,27 +1,50 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 using AngleSharp.Common;
 using AutoMapper;
+using Microsoft.Extensions.Logging;
 using ServiceStack.OrmLite;
+using SqdcWatcher.DataAccess;
 using SqdcWatcher.DataObjects;
 using SqdcWatcher.Dto;
-using SqdcWatcher.RestApiModels.cs;
+using SqdcWatcher.MappingFilters;
+using SqdcWatcher.RestApiModels;
+using SqdcWatcher.Visitors;
 
 namespace SqdcWatcher.Services
 {
     public class ProductsPersister
     {
-        private readonly DataAccess dataAccess;
+        private readonly ILogger<ProductsPersister> logger;
+        private readonly SqdcDataAccess sqdcDataAccess;
         private readonly MapperConfiguration mapperConfiguration;
         private readonly BecameInStockTriggerPolicy becameInStockTriggerPolicy;
+        private readonly IEnumerable<VisitorBase<ProductVariant>> variantVisitors;
+        private readonly IEnumerable<MappingFilterBase<ProductVariantDto, ProductVariant>> variantMappingFilters;
+        private readonly StockHistoryPersister stockHistoryPersister;
+        private readonly IEnumerable<VisitorBase<Product>> productVisitors;
 
-        public ProductsPersister(DataAccess dataAccess, MapperConfiguration mapperConfiguration, BecameInStockTriggerPolicy becameInStockTriggerPolicy)
+        public ProductsPersister(
+            ILogger<ProductsPersister> logger,
+            SqdcDataAccess sqdcDataAccess,
+            MapperConfiguration mapperConfiguration,
+            BecameInStockTriggerPolicy becameInStockTriggerPolicy,
+            IEnumerable<VisitorBase<Product>> productVisitors,
+            IEnumerable<VisitorBase<ProductVariant>> variantVisitors,
+            IEnumerable<MappingFilterBase<ProductVariantDto, ProductVariant>> variantMappingFilters,
+            StockHistoryPersister stockHistoryPersister)
         {
-            this.dataAccess = dataAccess;
+            this.logger = logger;
+            this.sqdcDataAccess = sqdcDataAccess;
             this.mapperConfiguration = mapperConfiguration;
             this.becameInStockTriggerPolicy = becameInStockTriggerPolicy;
+            this.variantVisitors = variantVisitors;
+            this.variantMappingFilters = variantMappingFilters;
+            this.stockHistoryPersister = stockHistoryPersister;
+            this.productVisitors = productVisitors.ToList();
         }
 
         public PersistProductsResult PersistMergeProducts(List<ProductDto> products, Dictionary<string, Product> dbProductsMap)
@@ -31,8 +54,6 @@ namespace SqdcWatcher.Services
         
         private PersistProductsResult PersistProducts(List<ProductDto> freshProducts, Dictionary<string, Product> dbProductsMap)
         {
-            int newProducts = 0;
-            int updatedProducts = 0;
             var productsToUpdate = new List<Product>();
             var persistResult = new PersistProductsResult
             {
@@ -42,21 +63,24 @@ namespace SqdcWatcher.Services
             {
                 if (!dbProductsMap.TryGetValue(freshProduct.Id, out Product dbProduct))
                 {
-                    dbProduct = new Product();
-                    newProducts++;
+                    dbProduct = new Product {IsNew = true};
                     persistResult.NewProducts.Add(dbProduct);
-                }
-                else
-                {
-                    updatedProducts++;
                 }
 
                 ProductMapResult mapResult = MapProductDto(freshProduct, dbProduct);
-
-                if(mapResult.NewVariantsInStock.Any())
+                
+                var variantsBecameInStockToNotify =
+                    mapResult.MappedProduct.Variants.Where(v => v.MetaData.HasBecomeInStock && v.MetaData.ShouldSendNotification);
+                foreach (ProductVariant variant in variantsBecameInStockToNotify)
                 {
-                    persistResult.NewVariantsInStock.Add(mapResult.MappedProduct, mapResult.NewVariantsInStock);
+                    if (!persistResult.NewVariantsInStock.TryGetValue(mapResult.MappedProduct, out List<ProductVariant> variantsList))
+                    {
+                        variantsList = new List<ProductVariant>();
+                        persistResult.NewVariantsInStock.Add(mapResult.MappedProduct, variantsList);
+                    }
+                    variantsList.Add(variant);
                 }
+                
                 if (mapResult.MappedProduct.Variants.Any(v => v.InStock))
                 {
                     persistResult.ProductsInStock.Add(mapResult.MappedProduct);
@@ -65,13 +89,22 @@ namespace SqdcWatcher.Services
                 productsToUpdate.Add(mapResult.MappedProduct);
             }
 
-            MoveKnownSpecsToParentObjects(productsToUpdate);
-            dataAccess.SaveProducts(productsToUpdate);
-
-            Console.WriteLine(
-                $"Online search found products {freshProducts.Count} ({newProducts} new, {updatedProducts} changed).");
-
+            ApplyVisitors(productVisitors, productsToUpdate);
+            
+            Stopwatch sw = Stopwatch.StartNew();
+            sqdcDataAccess.SaveProducts(productsToUpdate);
+            logger.Log(LogLevel.Information, $"Persisted {productsToUpdate.Count} products to DB in {sw.ElapsedMilliseconds}ms");
+            
             return persistResult;
+        }
+
+        private void ApplyVisitors<T>(IEnumerable<VisitorBase<T>> visitors, List<T> itemsToApplyTo)
+        {
+            foreach (VisitorBase<T> visitor in visitors)
+            {
+                logger.Log(LogLevel.Debug, $"Invoking visitor {visitor.GetType().Name} on {itemsToApplyTo.Count} products");
+                visitor.VisitAll(itemsToApplyTo);
+            }
         }
 
         private ProductMapResult MapProductDto(ProductDto source, Product destination)
@@ -96,56 +129,55 @@ namespace SqdcWatcher.Services
                     mapResult.NewVariants.Add(destVariant);
                 }
                 
-                ProductVariantMapResult variantMapResult = MapProductVariantDto(pv, destVariant);
-                if (variantMapResult.HasBecomeInStock)
-                {
-                    mapResult.NewVariantsInStock.Add(variantMapResult.MappedVariant);
-                }
+                MergeProductVariantDto(pv, destVariant);
             }
 
             return mapResult;
         }
 
-        private ProductVariantMapResult MapProductVariantDto(ProductVariantDto source, ProductVariant destination)
+        private void MergeProductVariantDto(ProductVariantDto source, ProductVariant destination)
         {
-            var mapResult = new ProductVariantMapResult
-            {
-                MappedVariant = destination,
-                HasBecomeInStock = !destination.InStock && source.InStock && !becameInStockTriggerPolicy.ShouldIgnoreInStockChange(destination)
-            };
-
             destination.Id = source.Id;
-            destination.InStock = source.InStock;
             destination.ProductId = source.Product.Id;
-            destination.PriceInfo = source.PriceInfo;
+            
+            foreach (MappingFilterBase<ProductVariantDto, ProductVariant> filter in variantMappingFilters)
+            {
+                filter.Apply(source, destination);
+            }
+            
+            destination.InStock = source.InStock;
+            MapPriceInfo(destination, source.PriceInfo);
 
             if (source.Specifications != null && source.Specifications.Any())
             {
                 destination.Specifications.MergeListById(source.Specifications, target => target.PropertyName);
             }
-
-            return mapResult;
         }
-        
-        private static void MoveKnownSpecsToParentObjects(List<Product> products)
-        {
-            foreach (Product p in products)
-            {
-                bool hasAssignedProduct = false;
-                foreach(ProductVariant variant in p.Variants)
-                {
-                    List<string> specsNamesToRemove = new List<string>();
-                    if(!hasAssignedProduct)
-                    {
-                        specsNamesToRemove = SpecificationCopier.CopySpecificationsToObject(p, variant.Specifications);
-                    }
 
-                    IEnumerable<string> allSpecsToRemove =
-                            specsNamesToRemove.Union(SpecificationCopier.CopySpecificationsToObject(variant, variant.Specifications));
-                    variant.Specifications.RemoveAll(spec => allSpecsToRemove.Contains(spec.PropertyName));
-                }
+        private static void MapPriceInfo(ProductVariant destination, ProductVariantPrice sourcePriceInfo)
+        {
+            if (sourcePriceInfo == null)
+            {
+                return;
+            }
+            
+            if (sourcePriceInfo.ListPrice != null)
+            {
+                destination.ListPrice = ParsePrice(sourcePriceInfo.ListPrice);
+            }
+            if (sourcePriceInfo.DisplayPrice != null)
+            {
+                destination.DisplayPrice = ParsePrice(sourcePriceInfo.DisplayPrice);
+            }
+            if (sourcePriceInfo.PricePerGram != null)
+            {
+                destination.PricePerGram = ParsePrice(sourcePriceInfo.PricePerGram);
             }
         }
 
+        private static double ParsePrice(string price)
+        {
+            return double.Parse(price.Trim('$', ' '));
+        }
     }
 }

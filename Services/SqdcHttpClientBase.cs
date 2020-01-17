@@ -20,10 +20,10 @@ namespace SqdcWatcher.Services
             client.UserAgent = "sqdc-watcher";
             
             client.DefaultParameters.Clear();
-            client.AddDefaultHeader("Accept", "application/json, text/javascript, */*; q=0.01");
+            
             client.AddDefaultHeader("Accept-Language", DEFAULT_LOCALE);
-            //client.AddDefaultHeader("Accept-Encoding", "gzip");
-            //client.AutomaticDecompression = true;
+            client.AddDefaultHeader("Accept-Encoding", "gzip,deflate,br");
+            client.AutomaticDecompression = true;
         }
     }
 }

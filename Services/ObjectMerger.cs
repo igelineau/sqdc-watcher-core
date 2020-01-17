@@ -10,9 +10,12 @@ namespace SqdcWatcher.Services
     {
         private static PropertyInfo UnwrapPropertyExpression(LambdaExpression expression)
         {
-            LambdaExpression reducedExpression = expression.Body is UnaryExpression unaryExpression ? (LambdaExpression) unaryExpression.Operand : expression;
-
-            if (!(reducedExpression.Body is MemberExpression memberExpression))
+            if (expression.Body is UnaryExpression unaryExpression)
+            {
+                return (PropertyInfo) ((MemberExpression) unaryExpression.Operand).Member;
+            }
+            
+            if (!(expression.Body is MemberExpression memberExpression))
             {
                 throw new InvalidOperationException("The reduced expression must be a member expression.");
             }

@@ -2,47 +2,59 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Alba.CsConsoleFormat;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RestSharp;
 using RestSharp.Serialization.Json;
 using SqdcWatcher.DataObjects;
-using SqdcWatcher.RestApiModels.cs;
+using SqdcWatcher.RestApiModels;
 
 namespace SqdcWatcher.Services
 {
     public class SqdcRestApiClient : SqdcHttpClientBase
     {
-        public SqdcRestApiClient() : base(BASE_DOMAIN + "/api")
+        private readonly ILogger<SqdcRestApiClient> logger;
+
+        public SqdcRestApiClient(ILogger<SqdcRestApiClient> logger) : base(BASE_DOMAIN + "/api")
         {
+            this.logger = logger;
+            
+            client.AddDefaultHeader("Accept", "application/json, text/javascript, */*; q=0.01");
             client.AddDefaultHeader("X-Requested-With", "XMLHttpRequest");
+            client.AddDefaultHeader("Content-Type", "application/json; charset=utf-8");
         }
 
-        public async Task<VariantsPricesResponse> GetVariantsPrices(IEnumerable<string> productIds)
+        public async Task<VariantsPricesResponse> GetVariantsPrices(IEnumerable<string> productIds, CancellationToken cancelToken)
         {
-            return await ExecutePostAsync<VariantsPricesResponse>("product/calculatePrices", new { products = productIds });
+            return await ExecutePostAsync<VariantsPricesResponse>("product/calculatePrices", new { products = productIds }, cancelToken);
         }
 
-        public async Task<List<string>> GetInventoryItems(IEnumerable<string> variantsIds)
+        public async Task<List<string>> GetInventoryItems(IEnumerable<string> variantsIds, CancellationToken cancelToken)
         {
-            return await ExecutePostAsync<List<string>>("inventory/findInventoryItems", new {skus = variantsIds});
+            return await ExecutePostAsync<List<string>>("inventory/findInventoryItems", new {skus = variantsIds}, cancelToken);
         }
 
-        public async Task<SpecificationsResponse> GetSpecifications(string productId, string variantId)
+        public async Task<SpecificationsResponse> GetSpecifications(string productId, string variantId, CancellationToken cancellationToken)
         {
             return await ExecutePostAsync<SpecificationsResponse>("product/specifications",
-                new {productId = productId, variantId = variantId});
+                new {productId = productId, variantId = variantId}, cancellationToken);
         }
 
-        private async Task<TResponseBody> ExecutePostAsync<TResponseBody>(string resource, object body) where TResponseBody : new()
+        private async Task<TResponseBody> ExecutePostAsync<TResponseBody>(string resource, object body, CancellationToken cancelToken) where TResponseBody : new()
         {
+            Stopwatch sw = Stopwatch.StartNew();
             var request = new RestRequest(resource, Method.POST, DataFormat.Json);
-            Console.WriteLine($"POST => {resource}");
             request.AddJsonBody(body);
-            IRestResponse<TResponseBody> response = await client.ExecutePostTaskAsync<TResponseBody>(request);
+            
+            IRestResponse<TResponseBody> response = await client.ExecutePostTaskAsync<TResponseBody>(request, cancelToken);
+            
+            logger.Log(LogLevel.Information, $"POST {sw.ElapsedMilliseconds}ms {resource}");
             if (response.IsSuccessful)
             {
+                
                 return response.Data;
             }
             

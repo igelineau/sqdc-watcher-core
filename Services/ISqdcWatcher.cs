@@ -1,9 +1,11 @@
 using System.Threading;
 
-namespace SqdcWatcher
+namespace SqdcWatcher.Services
 {
     public interface ISqdcWatcher
     {
-        void start(CancellationToken cancelToken);
+        void Start(CancellationToken cancelToken);
+        void RequestRefresh();
+        WatcherState State { get; }
     }
 }

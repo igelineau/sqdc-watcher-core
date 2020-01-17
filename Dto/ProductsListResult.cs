@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using SqdcWatcher.DataObjects;
-using SqdcWatcher.RestApiModels.cs;
+using SqdcWatcher.RestApiModels;
 
 namespace SqdcWatcher.Dto
 {

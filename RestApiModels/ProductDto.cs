@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SqdcWatcher.RestApiModels.cs
+namespace SqdcWatcher.RestApiModels
 {
     public class ProductDto
     {

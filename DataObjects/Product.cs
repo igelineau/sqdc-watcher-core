@@ -30,6 +30,9 @@ namespace SqdcWatcher.DataObjects
         
         public string TerpeneDetailed { get; set; }
         public string Brand { get; set; }
+        
+        [Ignore]
+        public bool IsNew { get; set; }
 
         public Product()
         {
@@ -55,6 +58,11 @@ namespace SqdcWatcher.DataObjects
         public ProductVariant GetVariantById(long variantId)
         {
             return Variants.FirstOrDefault(v => v.Id == variantId);
+        }
+
+        public bool IsInStock()
+        {
+            return Variants.Any(v => v.InStock);
         }
     }
 }

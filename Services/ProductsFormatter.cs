@@ -1,13 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Alba.CsConsoleFormat;
 using SqdcWatcher.DataObjects;
+using SqdcWatcher.Dto;
 
 namespace SqdcWatcher.Services
 {
     public class ProductsFormatter
     {
+        private const int TITLE_MAX_WIDTH = 20;
+        private const int STRAIN_MAX_WIDTH = 25;
+        private const int SINGLE_BRANDING_MAX_WIDTH = 25;
+        private const int DUAL_BRANDING_MAX_COMP_WIDTH = 12;
+            
         public static void WriteProductsTableToConsole(IEnumerable<Product> products)
         {
             var headerThickness = new LineThickness(LineWidth.Double, LineWidth.Single);
@@ -16,8 +24,8 @@ namespace SqdcWatcher.Services
                 new Document(
                     new Grid
                     {
-                        Background = ConsoleColor.DarkGray,
-                        Color = ConsoleColor.Gray,
+                        Background = System.ConsoleColor.DarkGray,
+                        Color = System.ConsoleColor.Gray,
                         Columns = { GridLength.Auto, GridLength.Auto, GridLength.Auto, GridLength.Auto },
                         Children =
                         {
@@ -27,13 +35,73 @@ namespace SqdcWatcher.Services
                             new Cell("Url") { Stroke = headerThickness },
                             products.Select(p => new[]
                             {
-                                new Cell(p.Title),
+                                new Cell(FormatConsoleProductPrefix(p) + p.Title),
                                 new Cell(FormatBrandAndSupplier(p)),
-                                CreateVariantsAvailableCell(p),
+                                new Cell(FormatVariantsAvailable(p)), 
                                 new Cell(p.Url),
                             })
                         }
                     }));
+        }
+
+        private static string FormatConsoleProductPrefix(Product p)
+        {
+            if (p.IsNew)
+            {
+                return p.IsInStock() ? "[NEW] " : "[UPCOMING] ";
+            }
+
+            return ""; 
+        }
+
+        private static string FormatSlackProductPrefix(Product p)
+        {
+            if (p.IsNew)
+            {
+                return p.IsInStock() ? ":weed: NEW :weed: " : ":star: UPCOMING :star: ";
+            }
+
+            return "";
+        }
+
+        public static string FormatForSlackTable(IEnumerable<Product> products, PersistProductsResult persistResults)
+        {
+            StringBuilder builder = new StringBuilder();
+            foreach (Product product in products)
+            {
+                string variantsAvailable = FormatVariantsAvailable(product);
+                builder.AppendLine($"*{FormatSlackProductPrefix(product)}{FormatNameWithType(product)}* / {product.Brand} {variantsAvailable}{product.Url}");
+            }
+
+            return builder.ToString();
+        }
+
+        private static string FormatNameWithType(Product product)
+        {
+            string name = FormatName(product);
+            if (!string.IsNullOrWhiteSpace(product.CannabisType))
+            {
+                return $"{name}, {product.CannabisType}";
+            }
+
+            return name;
+        }
+
+        private static string FormatName(Product product)
+        {
+            string name = product.Title;
+            string strain = LimitLength(product.Strain, STRAIN_MAX_WIDTH);
+            string finalName;
+            if (string.IsNullOrEmpty(strain) || strain.Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                finalName = name;
+            }
+            else
+            {
+                finalName = strain.IndexOf(',') > -1 ? $"{name} ({strain})" : $"{strain} ({name})";
+            }
+
+            return finalName;
         }
 
         private static string FormatBrandAndSupplier(Product product)
@@ -76,9 +144,10 @@ namespace SqdcWatcher.Services
 
         private static string LimitLength(string str, int maxLength) => str.Length <= maxLength ? str : str.Substring(0, maxLength);
 
-        private static Cell CreateVariantsAvailableCell(Product p)
+        private static string FormatVariantsAvailable(Product p)
         {
-            return new Cell(string.Join(", ", p.GetAvailableVariants().Select(v => v.GetDisplayQuantity())));
+            string formattedQuantities = string.Join(", ", p.GetAvailableVariants().Select(v => v.GetDisplayQuantity() + $" {v.DisplayPrice}$"));
+            return formattedQuantities == "" ? "" : $"({formattedQuantities}) ";
         }
     }
 }

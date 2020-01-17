@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using SqdcWatcher.RestApiModels.cs;
+using SqdcWatcher.RestApiModels;
 
 namespace SqdcWatcher.Services
 {

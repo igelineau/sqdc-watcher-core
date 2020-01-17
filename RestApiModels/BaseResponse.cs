@@ -1,4 +1,4 @@
-namespace SqdcWatcher.RestApiModels.cs
+namespace SqdcWatcher.RestApiModels
 {
     public class BaseResponse
     {

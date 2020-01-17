@@ -4,79 +4,181 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Alba.CsConsoleFormat;
+using Microsoft.Extensions.Logging;
+using ServiceStack.Script;
+using SqdcWatcher.DataAccess;
 using SqdcWatcher.DataObjects;
 using SqdcWatcher.Dto;
-using SqdcWatcher.RestApiModels.cs;
+using SqdcWatcher.RestApiModels;
 
 namespace SqdcWatcher.Services
 {
-    internal enum WatcherStatus
+    public enum WatcherState
     {
         Idle = 0,
         Running,
-        Stopping
+        Stopped
     }
     
     public class SqdcHttpWatcher : ISqdcWatcher
     {
+        private readonly TimeSpan loopInterval = TimeSpan.FromMinutes(6);
+
+        private readonly ILogger<SqdcHttpWatcher> logger;
         private readonly SqdcProductsFetcher productsFetcher;
         private readonly ProductsPersister productsPersister;
-        private readonly DataAccess dataAccess;
-        private WatcherStatus status;
+        private readonly SqdcDataAccess sqdcDataAccess;
+        private readonly SlackPostWebHookClient slackPostClient;
+        public WatcherState State { get; private set; }
+        
+        private bool isRefreshRequested;
+        private bool isRefreshInProgress;
 
-        public SqdcHttpWatcher(SqdcProductsFetcher productsFetcher, ProductsPersister productsPersister, DataAccess dataAccess)
+        public SqdcHttpWatcher(
+            ILogger<SqdcHttpWatcher> logger,
+            SqdcProductsFetcher productsFetcher,
+            ProductsPersister productsPersister,
+            SqdcDataAccess sqdcDataAccess,
+            SlackPostWebHookClient slackPostClient)
         {
+            this.logger = logger;
             this.productsFetcher = productsFetcher;
             this.productsPersister = productsPersister;
-            this.dataAccess = dataAccess;
+            this.sqdcDataAccess = sqdcDataAccess;
+            this.slackPostClient = slackPostClient;
         }
         
-        public void start(CancellationToken cancellationToken)
+        public void Start(CancellationToken cancellationToken)
         {
-            if(status == WatcherStatus.Running || status == WatcherStatus.Stopping)
+            if(State == WatcherState.Running)
             {
                 throw new WatcherStartException("cannot start watcher, it is already running.");
             }
 
-            status = WatcherStatus.Running;
-            Task.Run(async () => await Loop(cancellationToken), cancellationToken).Wait();
+            State = WatcherState.Running;
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Loop(cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    // do nothing
+                }
+                catch (Exception e)
+                {
+                    logger.LogError(e, e.Message);
+                }
+                finally
+                {
+                    State = WatcherState.Stopped;
+                }
+            }, CancellationToken.None);
         }
 
+        public void RequestRefresh()
+        {
+            if (isRefreshInProgress)
+            {
+                logger.LogInformation("Ignoring a manual refresh request made while a refresh is already in progress.");
+            }
+            else
+            {
+                isRefreshRequested = true;   
+            }
+        }
+        
         private async Task Loop(CancellationToken cancelToken)
         {
+            isRefreshInProgress = true;
+            
             while(!cancelToken.IsCancellationRequested)
             {
-                Dictionary<string, Product> dbProducts = dataAccess.GetProducts();
+                logger.LogInformation("--- Watcher - Refresh products started ---");
+                
                 Stopwatch sw = Stopwatch.StartNew();
-                ProductsListResult apiFetchResult = await productsFetcher.FetchProductsFromApi(new GetProductsInfoDto
+                
+                try
                 {
-                    VariantsWithUpToDateSpecs = new HashSet<long>(dbProducts.Values
-                        .SelectMany(v => v.Variants.Where(var => var.HasSpecifications()))
-                        .Select(v => v.Id))
-                });
-                Console.WriteLine($"API refresh completed in {Math.Round(sw.Elapsed.TotalSeconds, 1)}s");
-                List<ProductDto> apiProducts = apiFetchResult.Products.Values.ToList();
-                PersistProductsResult persistResult = productsPersister.PersistMergeProducts(apiProducts, dbProducts);
-                if (apiFetchResult.RemoteFetchPerformed)
+                    await ExecuteScan(cancelToken);
+                }
+                catch (Exception e)
                 {
-                    dataAccess.SetLastProductsListUpdateTimestamp(DateTime.Now);
+                    logger.LogError(e, "Error while executing scan within the watcher loop");
                 }
                 
-                Console.WriteLine();
-                Console.WriteLine($"All Products In Stock => {persistResult.ProductsInStock.Count}");
-                ProductsFormatter.WriteProductsTableToConsole(
-                    persistResult.ProductsInStock
-                        .Where(p => p.LevelTwoCategory == "Dried flowers")
-                        .OrderBy(p => p.ProducerName).ThenBy(p => p.Brand));
-                
-                Console.WriteLine($"Products newly in stock => {persistResult.NewVariantsInStock.Count}");
+                DateTime nextExecutionTime = DateTime.Now + loopInterval;
+                logger.LogInformation(
+                    $"Scan completed in {Math.Round(sw.Elapsed.TotalSeconds, 1)}s. Next execution: {nextExecutionTime:H\\hmm}");
+                await SleepChunksAsync(loopInterval, cancelToken);
+            }
+        }
+
+        private async Task ExecuteScan(CancellationToken cancelToken)
+        {
+            Dictionary<string, Product> dbProducts = sqdcDataAccess.GetProducts();
+
+            var getProductsInfoDto = new GetProductsInfoDto
+            {
+                VariantsWithUpToDateSpecs = new HashSet<long>(dbProducts.Values
+                    .SelectMany(v => v.Variants.Where(var => var.HasSpecifications()))
+                    .Select(v => v.Id))
+            };
+            ProductsListResult apiFetchResult = await productsFetcher.FetchProductsFromApi(getProductsInfoDto, cancelToken);
+            cancelToken.ThrowIfCancellationRequested();
+
+            List<ProductDto> apiProducts = apiFetchResult.Products.Values.ToList();
+            PersistProductsResult persistResult = productsPersister.PersistMergeProducts(apiProducts, dbProducts);
+            if (apiFetchResult.RemoteFetchPerformed)
+            {
+                sqdcDataAccess.SetLastProductsListUpdateTimestamp(DateTime.Now);
+            }
+
+            SendSlackNotifications(persistResult);
+
+            int nbDriedFlowersInStock = persistResult.ProductsInStock.Count(p => p.LevelTwoCategory == "Dried flowers");
+            logger.LogInformation(
+                $"Found {apiProducts.Count} products, {persistResult.ProductsInStock.Count} in stock ({nbDriedFlowersInStock} in Dried flowers)");
+            if (persistResult.NewVariantsInStock.Any())
+            {
+                logger.LogInformation($"BACK IN STOCK: {persistResult.NewVariantsInStock.Count} products");
+            }
+        }
+
+        private void SendSlackNotifications(PersistProductsResult persistResult)
+        {
+            if (persistResult.NewVariantsInStock.Any())
+            {
+                slackPostClient.PostToSlack(ProductsFormatter.FormatForSlackTable(persistResult.NewVariantsInStock.Keys, persistResult));
                 ProductsFormatter.WriteProductsTableToConsole(persistResult.NewVariantsInStock.Keys);
-                
-                Console.WriteLine($"Total: {apiProducts.Count} products");
-                
-                Console.WriteLine("Waiting 15 minutes until next execution");
-                await Task.Delay(TimeSpan.FromMinutes(15));
+            }
+
+            if (persistResult.NewProducts.Any())
+            {
+                slackPostClient.PostToSlack(ProductsFormatter.FormatForSlackTable(persistResult.NewProducts, persistResult));
+                ProductsFormatter.WriteProductsTableToConsole(persistResult.NewProducts);
+            }
+        }
+
+        private async Task SleepChunksAsync(TimeSpan totalTime, CancellationToken cancelToken)
+        {
+            isRefreshInProgress = false;
+            isRefreshRequested = false;
+            
+            TimeSpan totalWaited = TimeSpan.Zero;
+            TimeSpan chunkDuration = TimeSpan.FromMilliseconds(500);
+            
+            while (totalWaited < totalTime && !isRefreshRequested && !cancelToken.IsCancellationRequested)
+            {
+                await Task.Delay(chunkDuration, cancelToken).ConfigureAwait(false);
+                totalWaited += chunkDuration;
+            }
+
+            if (isRefreshRequested)
+            {
+                logger.LogInformation("Manual refresh was requested, proceeding...");
+                isRefreshRequested = false;
             }
         }
     }

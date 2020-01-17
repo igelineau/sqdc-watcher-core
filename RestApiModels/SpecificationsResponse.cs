@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using ServiceStack.DataAnnotations;
 using SqdcWatcher.DataObjects;
 
-namespace SqdcWatcher.RestApiModels.cs
+namespace SqdcWatcher.RestApiModels
 {
     public class SpecificationsResponse : BaseResponse
     {

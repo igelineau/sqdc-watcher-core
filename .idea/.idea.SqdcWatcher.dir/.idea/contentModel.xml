@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ContentModelStore">
+    <e p="$APPLICATION_CONFIG_DIR$/consoles/db" t="IncludeRecursive" />
+    <e p="$APPLICATION_CONFIG_DIR$/extensions" t="IncludeRecursive" />
+    <e p="$APPLICATION_CONFIG_DIR$/scratches" t="IncludeRecursive" />
+    <e p="$USER_HOME$/.Rider2019.2/system/extResources" t="IncludeRecursive" />
+    <e p="$USER_HOME$/.Rider2019.2/system/resharper-host/local/Transient/ReSharperHost/v192/SolutionCaches/_.19.00" t="ExcludeRecursive" />
+    <e p="$PROJECT_DIR$" t="IncludeRecursive">
+      <e p=".gitignore" t="Include" />
+      <e p="DataAccess" t="Include">
+        <e p="SqdcDataAccess.cs" t="Include" />
+      </e>
+      <e p="DataObjects" t="Include">
+        <e p="AppState.cs" t="Include" />
+        <e p="Product.cs" t="Include" />
+        <e p="ProductVariant.cs" t="Include" />
+        <e p="ProductVariantMetaData.cs" t="Include" />
+        <e p="SpecificationAttribute.cs" t="Include" />
+        <e p="StockEventNames.cs" t="Include" />
+        <e p="StockHistory.cs" t="Include" />
+      </e>
+      <e p="DataSources" t="Include" />
+      <e p="Dto" t="Include">
+        <e p="PersistProductsResult.cs" t="Include" />
+        <e p="ProductMapResult.cs" t="Include" />
+        <e p="ProductVariantMapResult.cs" t="Include" />
+        <e p="ProductsListResult.cs" t="Include" />
+      </e>
+      <e p="Exceptions" t="Include">
+        <e p="SqdcRestRequestException.cs" t="Include" />
+        <e p="WatcherStartException.cs" t="Include" />
+      </e>
+      <e p="MappingFilters" t="Include">
+        <e p="MappingFilterBase.cs" t="Include" />
+        <e p="ProductVariantMetaDataPopulator.cs" t="Include" />
+        <e p="VariantStockHistoryFilter.cs" t="Include" />
+      </e>
+      <e p="ProductFormatStyle.cs" t="Include" />
+      <e p="Program.cs" t="Include" />
+      <e p="RestApiModels" t="Include">
+        <e p="BaseResponse.cs" t="Include" />
+        <e p="Currency.cs" t="Include" />
+        <e p="ProductDto.cs" t="Include" />
+        <e p="ProductPageResult.cs" t="Include" />
+        <e p="ProductPrice.cs" t="Include" />
+        <e p="ProductVariantDto.cs" t="Include" />
+        <e p="SpecificationGroup.cs" t="Include" />
+        <e p="SpecificationsResponse.cs" t="Include" />
+        <e p="VariantPrice.cs" t="Include" />
+        <e p="VariantsPricesResponse.cs" t="Include" />
+      </e>
+      <e p="Services" t="Include">
+        <e p="BecameInStockTriggerPolicy.cs" t="Include" />
+        <e p="GetProductsInfoDto.cs" t="Include" />
+        <e p="ISqdcClient.cs" t="Include" />
+        <e p="ISqdcWatcher.cs" t="Include" />
+        <e p="ObjectMerger.cs" t="Include" />
+        <e p="ProductsFormatter.cs" t="Include" />
+        <e p="ProductsPersister.cs" t="Include" />
+        <e p="SlackPostWebhookClient.cs" t="Include" />
+        <e p="SpecificationAttributeDto.cs" t="Include" />
+        <e p="SqdcHtmlClient.cs" t="Include" />
+        <e p="SqdcHttpClientBase.cs" t="Include" />
+        <e p="SqdcHttpClientException.cs" t="Include" />
+        <e p="SqdcHttpWatcher.cs" t="Include" />
+        <e p="SqdcProductsFetcher.cs" t="Include" />
+        <e p="SqdcRestApiClient.cs" t="Include" />
+        <e p="StockHistoryPersister.cs" t="Include" />
+      </e>
+      <e p="SpecificationCopier.cs" t="Include" />
+      <e p="SqdcAppConfiguration.cs" t="Include" />
+      <e p="SqdcFormatter.cs" t="Include" />
+      <e p="SqdcWatcher.csproj" t="IncludeRecursive" />
+      <e p="SqlScripts" t="Include">
+        <e p="DeleteProduct.sql" t="Include" />
+        <e p="Variants.sql" t="Include" />
+      </e>
+      <e p="Utils" t="Include">
+        <e p="AssemblyExtensions.cs" t="Include" />
+      </e>
+      <e p="Visitors" t="Include">
+        <e p="MoveSpecificationsToPropertiesVisitor.cs" t="Include" />
+        <e p="ProductRarityVisitor.cs" t="Include" />
+        <e p="VariantStockPropertiesVisitor.cs" t="Include" />
+        <e p="VisitorBase.cs" t="Include" />
+      </e>
+      <e p="appsettings.json" t="Include" />
+      <e p="bin" t="ExcludeRecursive" />
+      <e p="obj" t="ExcludeRecursive">
+        <e p="Debug" t="Include">
+          <e p="netcoreapp2.1" t="Include">
+            <e p="SqdcWatcher.AssemblyInfo.cs" t="Include" />
+          </e>
+        </e>
+      </e>
+      <e p="packages" t="ExcludeRecursive" />
+    </e>
+  </component>
+</project>

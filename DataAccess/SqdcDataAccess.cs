@@ -1,23 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
+using System.Diagnostics;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using SqdcWatcher.DataObjects;
 
-namespace SqdcWatcher.Services
+namespace SqdcWatcher.DataAccess
 {
-    public class DataAccess
+    public class SqdcDataAccess
     {
+        private readonly ILogger<SqdcDataAccess> logger;
         private const string DEFAULT_APPSTATE_KEY = "default";
         const bool DROP_TABLES = false;
         
         private IDbConnection db;
 
-        public DataAccess(IDbConnectionFactory connectionFactory)
+        public SqdcDataAccess(IDbConnectionFactory connectionFactory, ILogger<SqdcDataAccess> logger)
         {
+            this.logger = logger;
             db = connectionFactory.OpenDbConnection();
 
             var tablesTypes = new[]
@@ -27,15 +30,33 @@ namespace SqdcWatcher.Services
                 typeof(SpecificationAttribute)
             };
 
-            if (DROP_TABLES)
-            {
-                db.DropTables(tablesTypes);
-            }
             db.CreateTables(overwrite: DROP_TABLES, tablesTypes);
+        }
+        
+        public List<Product> GetProductsSummary()
+        {
+            SqlExpression<Product> q = db
+                .From<Product>()
+                .LeftJoin<ProductVariant>();
+            List<Tuple<Product, ProductVariant>> result = db.SelectMulti<Product, ProductVariant>(q);
+            var finalResults = new Dictionary<string, Product>();
+            foreach ((Product p, ProductVariant pv) in result)
+            {
+                if (!finalResults.TryGetValue(p.Id, out Product product))
+                {
+                    finalResults.Add(p.Id, p);
+                    product = p;
+                }
+
+                product.AddOrGetVariant(pv);
+            }
+
+            return finalResults.Values.ToList();
         }
 
         public Dictionary<string, Product> GetProducts()
         {
+            Stopwatch sw = Stopwatch.StartNew();
             SqlExpression<Product> q = db
                 .From<Product>()
                 .LeftJoin<Product, ProductVariant>()
@@ -58,10 +79,9 @@ namespace SqdcWatcher.Services
                 {
                     spec.SetProductVariant(variant);
                 }
-                
-                finalResults.TryAdd(product.Id, product);
             }
 
+            logger.Log(LogLevel.Information, $"Retrieved {finalResults.Count} products from the DB store in {sw.ElapsedMilliseconds}ms");
             return finalResults;
         }
 
@@ -96,9 +116,9 @@ namespace SqdcWatcher.Services
             }
         }
 
-        public List<Product> GetProductsSummary()
+        public void InsertHistoryEntry(StockHistory stockHistory)
         {
-            return db.Select<Product>().ToList();
+            db.Insert(stockHistory);
         }
     }
 }
