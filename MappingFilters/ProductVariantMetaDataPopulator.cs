@@ -1,4 +1,5 @@
 using SqdcWatcher.DataObjects;
+using SqdcWatcher.Dto;
 using SqdcWatcher.RestApiModels;
 
 namespace SqdcWatcher.MappingFilters

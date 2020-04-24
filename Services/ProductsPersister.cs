@@ -12,6 +12,7 @@ using SqdcWatcher.DataObjects;
 using SqdcWatcher.Dto;
 using SqdcWatcher.MappingFilters;
 using SqdcWatcher.RestApiModels;
+using SqdcWatcher.Utils;
 using SqdcWatcher.Visitors;
 
 namespace SqdcWatcher.Services
@@ -90,20 +91,22 @@ namespace SqdcWatcher.Services
             }
 
             ApplyVisitors(productVisitors, productsToUpdate);
-            
+            ApplyVisitors(variantVisitors, productsToUpdate.SelectMany(p => p.Variants).ToList());
+
             Stopwatch sw = Stopwatch.StartNew();
+            logger.Log(LogLevel.Information, "Saving all products to DB...");
             sqdcDataAccess.SaveProducts(productsToUpdate);
             logger.Log(LogLevel.Information, $"Persisted {productsToUpdate.Count} products to DB in {sw.ElapsedMilliseconds}ms");
             
             return persistResult;
         }
 
-        private void ApplyVisitors<T>(IEnumerable<VisitorBase<T>> visitors, List<T> itemsToApplyTo)
+        private void ApplyVisitors<T>(IEnumerable<VisitorBase<T>> visitors, IList<T> itemsToApplyTo)
         {
-            foreach (VisitorBase<T> visitor in visitors)
+            foreach (VisitorBase<T> productVisitor in visitors)
             {
-                logger.Log(LogLevel.Debug, $"Invoking visitor {visitor.GetType().Name} on {itemsToApplyTo.Count} products");
-                visitor.VisitAll(itemsToApplyTo);
+                logger.Log(LogLevel.Debug, $"Invoking visitor {productVisitor.GetType().Name} on {itemsToApplyTo.Count} products");
+                productVisitor.VisitAll(itemsToApplyTo);
             }
         }
 
@@ -114,7 +117,7 @@ namespace SqdcWatcher.Services
                 MappedProduct = destination
             };
             
-            destination.Id = source.Id;
+            destination.ProductId = source.Id;
             destination.Title = source.Title;
             destination.Url = source.Url;
             destination.Brand = source.Brand;
@@ -137,7 +140,7 @@ namespace SqdcWatcher.Services
 
         private void MergeProductVariantDto(ProductVariantDto source, ProductVariant destination)
         {
-            destination.Id = source.Id;
+            destination.ProductVariantId = source.Id;
             destination.ProductId = source.Product.Id;
             
             foreach (MappingFilterBase<ProductVariantDto, ProductVariant> filter in variantMappingFilters)
@@ -150,7 +153,10 @@ namespace SqdcWatcher.Services
 
             if (source.Specifications != null && source.Specifications.Any())
             {
-                destination.Specifications.MergeListById(source.Specifications, target => target.PropertyName);
+                destination.Specifications.MergeListById(
+                    source.Specifications,
+                    s => s.PropertyName,
+                    t => t.PropertyName);
             }
         }
 
@@ -160,24 +166,22 @@ namespace SqdcWatcher.Services
             {
                 return;
             }
-            
-            if (sourcePriceInfo.ListPrice != null)
+
+            var parsedPrices = PriceParser.ParseVariantPrice(sourcePriceInfo);
+            if (parsedPrices.ListPrice != null)
             {
-                destination.ListPrice = ParsePrice(sourcePriceInfo.ListPrice);
+                destination.ListPrice = parsedPrices.ListPrice.Value;
             }
-            if (sourcePriceInfo.DisplayPrice != null)
+            if (parsedPrices.DisplayPrice != null)
             {
-                destination.DisplayPrice = ParsePrice(sourcePriceInfo.DisplayPrice);
+                destination.DisplayPrice = parsedPrices.DisplayPrice.Value;
             }
-            if (sourcePriceInfo.PricePerGram != null)
+            if (parsedPrices.PricePerGram != null)
             {
-                destination.PricePerGram = ParsePrice(sourcePriceInfo.PricePerGram);
+                destination.PricePerGram = parsedPrices.PricePerGram.Value;
             }
         }
 
-        private static double ParsePrice(string price)
-        {
-            return double.Parse(price.Trim('$', ' '));
-        }
+
     }
 }

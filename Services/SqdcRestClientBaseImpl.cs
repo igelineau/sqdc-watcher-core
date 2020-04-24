@@ -1,7 +1,6 @@
 using System;
 using RestClient.Net;
 using RestClient.Net.Abstractions;
-using RestClient.Net.Abstractions.Extensions;
 
 namespace SqdcWatcher.Services
 {

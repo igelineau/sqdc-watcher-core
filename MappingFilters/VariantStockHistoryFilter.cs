@@ -1,5 +1,6 @@
 using System;
 using SqdcWatcher.DataObjects;
+using SqdcWatcher.Dto;
 using SqdcWatcher.RestApiModels;
 using SqdcWatcher.Services;
 

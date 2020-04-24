@@ -1,4 +1,4 @@
-namespace SqdcWatcher.DataObjects
+namespace SqdcWatcher.Dto
 {
     public class ProductVariantMetaData
     {

@@ -3,14 +3,20 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ServiceStack.DataAnnotations;
+using SqdcWatcher.DataAccess;
 
 namespace SqdcWatcher.DataObjects
 {
+    [TableObject]
     [DebuggerDisplay("{Title} from {ProducerName} ({LevelTwoCategory})")]
     public class Product
     {
+        [Ignore]
+        public string Id => ProductId;
+    
+        [PrimaryKey]
         [Required]
-        public string Id { get; set; }
+        public string ProductId { get; set; }
         public string Title { get; set; }
         [Required]
         public string Url { get; set; }
@@ -46,7 +52,12 @@ namespace SqdcWatcher.DataObjects
 
         public ProductVariant AddOrGetVariant(ProductVariant variant)
         {
-            ProductVariant existingVariant = Variants.FirstOrDefault(v => v.Id == variant.Id);
+            if (variant == null)
+            {
+                throw new ArgumentNullException(nameof(variant));
+            }
+            
+            ProductVariant existingVariant = Variants.FirstOrDefault(v => v.ProductVariantId == variant.ProductVariantId);
             if (existingVariant == null)
             {
                 variant.SetProduct(this);
@@ -57,12 +68,31 @@ namespace SqdcWatcher.DataObjects
 
         public ProductVariant GetVariantById(long variantId)
         {
-            return Variants.FirstOrDefault(v => v.Id == variantId);
+            return Variants.FirstOrDefault(v => v.ProductVariantId == variantId);
         }
 
         public bool IsInStock()
         {
             return Variants.Any(v => v.InStock);
+        }
+        
+        
+        protected bool Equals(Product other)
+        {
+            return ProductId == other.ProductId;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((Product) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return ProductId.GetHashCode();
         }
     }
 }

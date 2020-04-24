@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
@@ -33,6 +34,9 @@ namespace SqdcWatcher
         private static void Main(string[] args)
         {
             RegisterServices();
+
+            Console.WriteLine(
+                $"Slack Post URL: {ServiceProvider.GetService<IOptions<SqdcAppConfiguration>>().Value.SlackPostUrl}");
             
             Console.TreatControlCAsInput = true;
             
@@ -55,6 +59,7 @@ namespace SqdcWatcher
                     while (!cancelTokenSource.IsCancellationRequested)
                     {
                         ConsoleKeyInfo key = Console.ReadKey();
+                        Debug.WriteLine($"KEY PRESSED: {key.Key}");
                         if (key.Key == ConsoleKey.F5)
                         {
                             watcher.RequestRefresh();
@@ -97,7 +102,9 @@ namespace SqdcWatcher
 
             IConfiguration config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", true, true)
+                .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")?.ToLower()}.json", true, true)
                 .Build();
+
             services.AddSingleton(config);
             services.AddOptions();
             services.Configure<SqdcAppConfiguration>(config.GetSection("SqdcSettings"));
@@ -117,19 +124,22 @@ namespace SqdcWatcher
             services.AddSingleton<SlackPostWebHookClient>();
             services.AddSingleton<BecameInStockTriggerPolicy>();
             services.AddSingleton<StockHistoryPersister>();
+            
+            services.AddSingleton<DapperDataAccess>();
 
             ServiceProvider = services.BuildServiceProvider();
         }
         
         private static void ConfigureLogging(ServiceCollection services)
         {
+            string logsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), CONFIG_DIR_NAME, "logs");
             services.AddLogging(configure => configure.AddSerilog(new LoggerConfiguration()
                 .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Debug)
                 .Enrich.FromLogContext()
                 .WriteTo.Console(theme: AnsiConsoleTheme.Code)
-                .WriteTo.File(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), CONFIG_DIR_NAME, "logs", "all.log"),
-                    LogEventLevel.Information)
+                .WriteTo.File(Path.Combine(logsDirectory, "all.log"), LogEventLevel.Information)
+                .WriteTo.File(Path.Combine(logsDirectory, "errors.log"), LogEventLevel.Error)
                 .CreateLogger()));
 
             //Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
@@ -163,10 +173,21 @@ namespace SqdcWatcher
 
         private static void ConfigureDatabase(ServiceCollection collection)
         {
+            string envName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            string envSuffix = "";
+            if (envName != null)
+            {
+                envSuffix = "_" + envName;
+            }
+
             string databasePath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 CONFIG_DIR_NAME,
-                "store.db");
+                $"store{envSuffix}.db");
+            
+            Console.WriteLine($"Environment: {Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "PRODUCTION"}");
+            Console.WriteLine($"Using database : {databasePath}");
+            
             if (!Directory.Exists(Path.GetDirectoryName(databasePath)))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(databasePath));

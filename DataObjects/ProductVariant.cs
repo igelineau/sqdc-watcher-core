@@ -3,22 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ServiceStack.DataAnnotations;
+using SqdcWatcher.DataAccess;
+using SqdcWatcher.Dto;
 
 namespace SqdcWatcher.DataObjects
 {
+    [TableObject]
     public class ProductVariant
     {
+        [Ignore]
+        public long Id => ProductVariantId;
+        
         [Ignore]
         public ProductVariantMetaData MetaData { get; private set; } = new ProductVariantMetaData { WasFetched = false };
 
         [Ignore]
         public bool HasMetaData => MetaData != null;
 
-        public long Id { get; set; }
+        [PrimaryKey]
+        public long ProductVariantId { get; set; }
 
         [Reference]
         public Product Product { get; set; }
 
+        [Index]
         public string ProductId { get; set; }
 
         public bool InStock { get; set; }
@@ -28,7 +36,7 @@ namespace SqdcWatcher.DataObjects
         [Reference]
         public List<SpecificationAttribute> Specifications { get; set; }
         
-        public DateTime LastInStockTimestamp { get; set; }
+        public DateTime? LastInStockTimestamp { get; set; }
 
         public double PricePerGram { get; set; }
         public double DisplayPrice { get; set; }
@@ -58,7 +66,7 @@ namespace SqdcWatcher.DataObjects
 
         protected bool Equals(ProductVariant other)
         {
-            return Id == other.Id;
+            return ProductVariantId == other.ProductVariantId;
         }
 
         public override bool Equals(object obj)
@@ -71,7 +79,7 @@ namespace SqdcWatcher.DataObjects
 
         public override int GetHashCode()
         {
-            return Id.GetHashCode();
+            return ProductVariantId.GetHashCode();
         }
 
         internal bool HasSpecifications()

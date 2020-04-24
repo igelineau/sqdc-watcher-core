@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using JetBrains.Annotations;
 
 namespace SqdcWatcher.Services
 {
@@ -26,24 +27,26 @@ namespace SqdcWatcher.Services
         public static void MergeListById<TTarget, TSource> (
             this ICollection<TTarget> destination,
             IEnumerable<TSource> source,
-            Expression<Func<TTarget, object>> idSelector) where TTarget: new()
+            Expression<Func<TSource, object>> sourceIdSelector = null,
+            Expression<Func<TTarget, object>> targetIdSelector = null) where TTarget: new()
         {
-            PropertyInfo targetIdProp = UnwrapPropertyExpression(idSelector);
-            PropertyInfo sourceIdProp =
-                typeof(TSource).GetProperty(targetIdProp.Name, BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
-                ?? throw new ArgumentException($"ID property not found in source type {typeof(TSource)}, Id property name={targetIdProp.Name}");
+            PropertyInfo sourceIdProp = UnwrapPropertyExpression(
+                sourceIdSelector ?? CreateDynamicPropertyExpression<TSource, object>("Id"));
+            PropertyInfo targetIdProp = UnwrapPropertyExpression(
+                targetIdSelector ?? CreateDynamicPropertyExpression<TTarget, object>("Id"));
+            
             foreach (TSource sourceItem in source)
             {
                 object sourceId = sourceIdProp.GetValue(sourceItem);
                 TTarget targetItem = destination.FirstOrDefault(tItem =>
                 {
                     object targetId = targetIdProp.GetValue(tItem);
-                    if (object.ReferenceEquals(sourceId, targetId))
+                    if (ReferenceEquals(sourceId, targetId))
                     {
                         return true;
                     }
 
-                    return sourceId.Equals(targetId);
+                    return sourceId?.Equals(targetId) ?? false;
                 });
 
                 if (targetItem == null)
@@ -60,8 +63,10 @@ namespace SqdcWatcher.Services
         public static TTarget MergeObjectsProperties<TSource, TTarget>(this TSource sourceObject, TTarget target)
         {
             IEnumerable<PropertyInfo> sourceProperties = typeof(TSource).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            Dictionary<string, PropertyInfo> targetWriteableProperties = typeof(TTarget).GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(p => (!p.PropertyType.IsClass || p.PropertyType == typeof(string)) && p.GetSetMethod() != null).ToDictionary(p => p.Name);
+            Dictionary<string, PropertyInfo> targetWriteableProperties = typeof(TTarget)
+                    .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                    .Where(p => (!p.PropertyType.IsClass || p.PropertyType == typeof(string)) && p.GetSetMethod() != null)
+                    .ToDictionary(p => p.Name);
             foreach (PropertyInfo sourceProp in sourceProperties)
             {
                 if (targetWriteableProperties.TryGetValue(sourceProp.Name, out PropertyInfo targetProp))
@@ -71,6 +76,21 @@ namespace SqdcWatcher.Services
             }
 
             return target;
+        }
+
+        private static Expression<Func<TObjectType, TPropertyType>> CreateDynamicPropertyExpression<TObjectType, TPropertyType>(string propertyName)
+        {
+            ParameterExpression parameter = Expression.Parameter(typeof(TObjectType));
+            return Expression.Lambda<Func<TObjectType, TPropertyType>>(
+                Expression.Property(parameter, propertyName), parameter);
+        }
+
+        [Pure]
+        private static PropertyInfo GetPropertyInfoByName(Type type, string propertyName)
+        {
+            return type.GetProperty(propertyName,
+                       BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
+                   ?? throw new ArgumentException($"Property '{propertyName}' not found in type {type}");
         }
     }
 }

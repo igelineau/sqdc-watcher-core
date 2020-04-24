@@ -1,14 +1,16 @@
 using System;
 using ServiceStack.DataAnnotations;
+using SqdcWatcher.DataAccess;
 
 namespace SqdcWatcher.DataObjects
 {
+    [TableObject]
     public class StockHistory
     {
         [PrimaryKey]
         [AutoIncrement]
         public long Id { get; set; }
-        
+
         public long ProductVariantId { get; set; }
 
         public DateTime Timestamp { get; set; }

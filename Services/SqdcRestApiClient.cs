@@ -46,7 +46,7 @@ namespace SqdcWatcher.Services
             var request = new RestRequest(resource, Method.POST, DataFormat.Json);
             request.AddJsonBody(body);
             
-            IRestResponse<TResponseBody> response = await client.ExecutePostTaskAsync<TResponseBody>(request, cancelToken);
+            IRestResponse<TResponseBody> response = await client.ExecutePostAsync<TResponseBody>(request, cancelToken);
             
             logger.Log(LogLevel.Information, $"POST {sw.ElapsedMilliseconds}ms {resource}");
             LogRequest(request, response, sw.ElapsedMilliseconds);

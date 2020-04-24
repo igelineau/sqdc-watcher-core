@@ -29,6 +29,7 @@ namespace SqdcWatcher.Services
         private readonly ProductsPersister productsPersister;
         private readonly SqdcDataAccess sqdcDataAccess;
         private readonly SlackPostWebHookClient slackPostClient;
+        private readonly DapperDataAccess dapperDataAccess;
         public WatcherState State { get; private set; }
         
         private bool isRefreshRequested;
@@ -40,13 +41,15 @@ namespace SqdcWatcher.Services
             SqdcProductsFetcher productsFetcher,
             ProductsPersister productsPersister,
             SqdcDataAccess sqdcDataAccess,
-            SlackPostWebHookClient slackPostClient)
+            SlackPostWebHookClient slackPostClient,
+            DapperDataAccess dapperDataAccess)
         {
             this.logger = logger;
             this.productsFetcher = productsFetcher;
             this.productsPersister = productsPersister;
             this.sqdcDataAccess = sqdcDataAccess;
             this.slackPostClient = slackPostClient;
+            this.dapperDataAccess = dapperDataAccess;
         }
         
         public void Start(CancellationToken cancellationToken)
@@ -123,13 +126,13 @@ namespace SqdcWatcher.Services
 
         private async Task ExecuteScan(CancellationToken cancelToken)
         {
-            Dictionary<string, Product> dbProducts = sqdcDataAccess.GetProducts();
+            Dictionary<string, Product> dbProducts = await dapperDataAccess.GetProductsAsync();
 
             var getProductsInfoDto = new GetProductsInfoDto
             {
                 VariantsWithUpToDateSpecs = new HashSet<long>(dbProducts.Values
                     .SelectMany(v => v.Variants.Where(var => var.HasSpecifications()))
-                    .Select(v => v.Id))
+                    .Select(v => v.ProductVariantId))
             };
             ProductsListResult apiFetchResult = await productsFetcher.FetchProductsFromApi(
                 getProductsInfoDto,
@@ -139,12 +142,17 @@ namespace SqdcWatcher.Services
 
             List<ProductDto> apiProducts = apiFetchResult.Products.Values.ToList();
             PersistProductsResult persistResult = productsPersister.PersistMergeProducts(apiProducts, dbProducts);
+
+            var isFirstRun = !sqdcDataAccess.GetLastProductsListUpdateTimestamp().HasValue;
             if (apiFetchResult.RemoteFetchPerformed)
             {
                 sqdcDataAccess.SetLastProductsListUpdateTimestamp(DateTime.Now);
             }
 
-            SendSlackNotifications(persistResult);
+            if (!isFirstRun)
+            {
+                SendSlackNotifications(persistResult);
+            }
 
             int nbDriedFlowersInStock = persistResult.ProductsInStock.Count(p => p.LevelTwoCategory == "Dried flowers");
             logger.LogInformation(

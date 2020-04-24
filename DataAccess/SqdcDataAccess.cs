@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
@@ -21,18 +23,17 @@ namespace SqdcWatcher.DataAccess
         public SqdcDataAccess(IDbConnectionFactory connectionFactory, ILogger<SqdcDataAccess> logger)
         {
             this.logger = logger;
+
             db = connectionFactory.OpenDbConnection();
 
-            var tablesTypes = new[]
-            {
-                typeof(Product),
-                typeof(ProductVariant),
-                typeof(SpecificationAttribute)
-            };
-
+            string dataObjectsNamespace = typeof(Product).Namespace ?? throw new InvalidOperationException("Product has no namespace.");
+            var tablesTypes = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(t => t.CustomAttributes.Any(ca => ca.AttributeType == typeof(TableObjectAttribute)))
+                .ToArray();
             db.CreateTables(overwrite: DROP_TABLES, tablesTypes);
         }
         
+        [Obsolete]
         public List<Product> GetProductsSummary()
         {
             SqlExpression<Product> q = db
@@ -42,13 +43,13 @@ namespace SqdcWatcher.DataAccess
             var finalResults = new Dictionary<string, Product>();
             foreach ((Product p, ProductVariant pv) in result)
             {
-                if (!finalResults.TryGetValue(p.Id, out Product product))
+                if (!finalResults.TryGetValue(p.ProductId, out Product product))
                 {
-                    finalResults.Add(p.Id, p);
+                    finalResults.Add(p.ProductId, p);
                     product = p;
                 }
 
-                if(pv.Id > 0)
+                if(pv.ProductVariantId > 0)
                 {
                     product.AddOrGetVariant(pv);
                 }                
@@ -64,21 +65,21 @@ namespace SqdcWatcher.DataAccess
                 .From<Product>()
                 .LeftJoin<Product, ProductVariant>()
                 .LeftJoin<ProductVariant, SpecificationAttribute>();
-            
+
             List<Tuple<Product, ProductVariant, SpecificationAttribute>> results =
                 db.SelectMulti<Product, ProductVariant, SpecificationAttribute>(q);
-            
+
             var finalResults = new Dictionary<string, Product>();
             
             foreach ((Product p, ProductVariant pv, SpecificationAttribute spec) in results)
             {
-                if (!finalResults.TryGetValue(p.Id, out Product product))
+                if (!finalResults.TryGetValue(p.ProductId, out Product product))
                 {
-                    finalResults.Add(p.Id, p);
+                    finalResults.Add(p.ProductId, p);
                     product = p;
                 }
                 ProductVariant variant = product.AddOrGetVariant(pv);
-                if(spec.Id > 0)
+                if(spec.SpecificationAttributeId > 0)
                 {
                     spec.SetProductVariant(variant);
                 }
@@ -103,10 +104,11 @@ namespace SqdcWatcher.DataAccess
             }
         }
 
-        public DateTime GetLastProductsListUpdateTimestamp()
+        public DateTime? GetLastProductsListUpdateTimestamp()
         {
             var q = db.From<AppState>().Limit(1).Select<AppState>(s => s.LastProductsListRefresh);
-            return db.Select<DateTime>(q).FirstOrDefault();
+            var result = db.Select(q).FirstOrDefault();
+            return result?.LastProductsListRefresh;
         }
 
         public void SetLastProductsListUpdateTimestamp(DateTime value)
@@ -122,6 +124,11 @@ namespace SqdcWatcher.DataAccess
         public void InsertHistoryEntry(StockHistory stockHistory)
         {
             db.Insert(stockHistory);
+        }
+
+        public void InsertPriceHistoryEntry(PriceHistory priceHistory)
+        {
+            db.Insert(priceHistory);
         }
     }
 }

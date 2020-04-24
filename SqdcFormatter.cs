@@ -17,7 +17,7 @@ namespace SqdcWatcher
             StringBuilder sb = new StringBuilder();
             foreach(Product product in products)
             {
-                sb.AppendLine($"id= {product.Id}, title= {product.Title}, url= {product.Url}");
+                sb.AppendLine($"id= {product.ProductId}, title= {product.Title}, url= {product.Url}");
             }
 
             return sb.ToString();

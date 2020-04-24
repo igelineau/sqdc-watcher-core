@@ -69,7 +69,7 @@ namespace SqdcWatcher.Services
             request.AddQueryParameter("keywords", "*");
 
             Stopwatch sw = Stopwatch.StartNew();
-            IRestResponse response = await client.ExecuteTaskAsync(request, cancelToken);
+            IRestResponse response = await client.ExecuteAsync(request, cancelToken);
             logger.LogDebug($"Loaded SQDC products page {pageNumber} in {sw.ElapsedMilliseconds}ms");
             CheckResponseSuccess(response);
 

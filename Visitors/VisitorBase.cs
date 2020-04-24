@@ -6,7 +6,7 @@ namespace SqdcWatcher.Visitors
     {
         public abstract void Visit(T instance);
 
-        public void VisitAll(ICollection<T> collection)
+        public void VisitAll(IEnumerable<T> collection)
         {
             foreach (T item in collection)
             {

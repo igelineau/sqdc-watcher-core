@@ -20,13 +20,20 @@ namespace SqdcWatcher.Services
         private readonly SqdcWebClient htmlClient;
         private readonly SqdcRestApiClient restClient;
         private readonly SqdcDataAccess sqdcDataAccess;
+        private readonly DapperDataAccess dapperDataAccess;
         private readonly ILogger<SqdcProductsFetcher> logger;
 
-        public SqdcProductsFetcher(SqdcWebClient htmlClient, SqdcRestApiClient restClient, SqdcDataAccess sqdcDataAccess, ILogger<SqdcProductsFetcher> logger)
+        public SqdcProductsFetcher(
+            SqdcWebClient htmlClient,
+            SqdcRestApiClient restClient,
+            SqdcDataAccess sqdcDataAccess,
+            DapperDataAccess dapperDataAccess,
+            ILogger<SqdcProductsFetcher> logger)
         {
             this.htmlClient = htmlClient;
             this.restClient = restClient;
             this.sqdcDataAccess = sqdcDataAccess;
+            this.dapperDataAccess = dapperDataAccess;
             this.logger = logger;
         }
 
@@ -38,7 +45,7 @@ namespace SqdcWatcher.Services
             Stopwatch sw = Stopwatch.StartNew();
             Dictionary<string, ProductDto> products;
 
-            DateTime lastProductsListScan = sqdcDataAccess.GetLastProductsListUpdateTimestamp();
+            DateTime lastProductsListScan = sqdcDataAccess.GetLastProductsListUpdateTimestamp() ?? DateTime.MinValue;
             bool willDoFullRefresh = forceFullRefresh || DateTime.Now - lastProductsListScan > refreshProductsListInterval; 
             if (willDoFullRefresh)
             {
@@ -52,7 +59,7 @@ namespace SqdcWatcher.Services
             else
             {
                 logger.LogInformation("Using Product List cached from the local DB...");
-                products = LoadProductsListFromCachedDatabase();
+                products = await LoadProductsListFromCachedDatabase();
             }
             
             Dictionary<string, ProductVariantDto> variantsMap =
@@ -72,19 +79,22 @@ namespace SqdcWatcher.Services
             };
         }
 
-        private Dictionary<string, ProductDto> LoadProductsListFromCachedDatabase()
+        private async Task<Dictionary<string, ProductDto>> LoadProductsListFromCachedDatabase()
         {
-            List<Product> allDbProducts = sqdcDataAccess.GetProductsSummary();
-            return allDbProducts.Select(dbProd =>
+            Dictionary<string, Product> allDbProducts = await dapperDataAccess.GetProductsSummaryAsync();
+            return allDbProducts.Values.Select(dbProd =>
             {
                 var prodDto = new ProductDto
                 {
-                    Id = dbProd.Id,
+                    Id = dbProd.ProductId,
                     Title = dbProd.Title,
                     Brand = dbProd.Brand,
                     Url = dbProd.Url
                 };
-                prodDto.Variants.MergeListById(dbProd.Variants, o => o.Id);
+                prodDto.Variants.MergeListById(
+                    dbProd.Variants,
+                    o => o.ProductVariantId,
+                    o => o.Id);
                 foreach (ProductVariantDto pv in prodDto.Variants)
                 {
                     pv.Product = prodDto;
