@@ -78,24 +78,12 @@ namespace SqdcWatcher.Services
                 productsToUpdate.Add(mapResult.MappedProduct);
             }
 
-            ApplyVisitors(productVisitors, productsToUpdate);
-            ApplyVisitors(variantVisitors, productsToUpdate.SelectMany(p => p.Variants).ToList());
-
             Stopwatch sw = Stopwatch.StartNew();
             logger.Log(LogLevel.Information, "Saving all products to DB...");
             await sqdcDataAccess.SaveProducts(productsToUpdate);
             logger.Log(LogLevel.Information, $"Persisted {productsToUpdate.Count} products to DB in {sw.ElapsedMilliseconds}ms");
 
             return persistResult;
-        }
-
-        private void ApplyVisitors<T>(IEnumerable<VisitorBase<T>> visitors, IList<T> itemsToApplyTo)
-        {
-            foreach (VisitorBase<T> productVisitor in visitors)
-            {
-                logger.Log(LogLevel.Debug, $"Invoking visitor {productVisitor.GetType().Name} on {itemsToApplyTo.Count} products");
-                productVisitor.VisitAll(itemsToApplyTo);
-            }
         }
 
         private ProductMapResult MapProductDto(ProductDto source, Product destination)

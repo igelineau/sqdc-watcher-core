@@ -32,7 +32,8 @@ namespace SqdcWatcher.Services
             this ICollection<TTarget> destination,
             IEnumerable<TSource> source,
             Expression<Func<TSource, object>> sourceIdSelector = null,
-            Expression<Func<TTarget, object>> targetIdSelector = null) where TTarget : new()
+            Expression<Func<TTarget, object>> targetIdSelector = null,
+            Action<TTarget> augmenter = null) where TTarget : new()
         {
             PropertyInfo sourceIdProp = UnwrapPropertyExpression(
                 sourceIdSelector ?? CreateDynamicPropertyExpression<TSource, object>("Id"));
@@ -55,12 +56,15 @@ namespace SqdcWatcher.Services
 
                 if (targetItem == null)
                 {
-                    destination.Add(MergeObjectsProperties(sourceItem, new TTarget()));
+                    targetItem = MergeObjectsProperties(sourceItem, new TTarget());
+                    destination.Add(targetItem);
                 }
                 else
                 {
                     MergeObjectsProperties(sourceItem, targetItem);
                 }
+                
+                augmenter?.Invoke(targetItem);
             }
         }
 

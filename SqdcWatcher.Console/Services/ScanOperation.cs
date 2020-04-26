@@ -17,6 +17,7 @@ using SqdcWatcher.Dto;
 using SqdcWatcher.Mappers;
 using SqdcWatcher.RestApiModels;
 using SqdcWatcher.Utils;
+using SqdcWatcher.Visitors;
 
 #endregion
 
@@ -43,6 +44,8 @@ namespace SqdcWatcher.Services
         private SqdcDbContext dbContext;
 
         private bool mustUpdateProductsList;
+        private readonly SpecificationsMapper specificationsMapper;
+        private readonly IEnumerable<VisitorBase<Product>> productVisitors;
 
         public ScanOperation(
             SqdcWebClient sqdcWebClient,
@@ -52,7 +55,9 @@ namespace SqdcWatcher.Services
             VariantStockStatusUpdater variantStockStatusUpdater,
             Func<SqdcDbContext> dbContextFactory,
             ILogger<ScanOperation> logger,
-            SlackPostWebHookClient slackPostClient)
+            SlackPostWebHookClient slackPostClient,
+            SpecificationsMapper specificationsMapper,
+            IEnumerable<VisitorBase<Product>> productVisitors)
         {
             this.sqdcWebClient = sqdcWebClient;
             this.restClient = restClient;
@@ -62,6 +67,8 @@ namespace SqdcWatcher.Services
             this.dbContextFactory = dbContextFactory;
             this.logger = logger;
             this.slackPostClient = slackPostClient;
+            this.specificationsMapper = specificationsMapper;
+            this.productVisitors = productVisitors;
         }
 
         public async Task Execute(bool forceProductsRefresh, CancellationToken cancellationToken)
@@ -72,7 +79,7 @@ namespace SqdcWatcher.Services
                 await InitializeOptions(forceProductsRefresh);
                 await ExecuteInternal(cancellationToken);
                 UpdateAppState();
-
+                
                 ReportSummaryOfPendingChanges();
                 await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -82,6 +89,11 @@ namespace SqdcWatcher.Services
             {
                 dbContext?.Dispose();
             }
+        }
+
+        private void ApplyAllVisitors()
+        {
+            VisitorBase.ApplyVisitors(productVisitors, localProducts.Values);
         }
 
         private async Task InitializeOptions(bool forceProductsRefresh)
@@ -126,10 +138,13 @@ namespace SqdcWatcher.Services
                 }
             }
 
+            logger.LogInformation("Summary of changes to apply to database:");
             foreach ((Type key, (int nbAdded, int nbModified)) in numberOfEntriesByType)
             {
-                logger.LogInformation("Summary of changes to apply to database:");
-                logger.LogInformation($"{key.Name}: {nbAdded} added, {nbModified} modified");
+                if (nbAdded + nbModified > 0)
+                {
+                    logger.LogInformation($"{key.Name}: {nbAdded} added, {nbModified} modified");    
+                }
             }
         }
 
@@ -141,6 +156,9 @@ namespace SqdcWatcher.Services
 
             await RefreshVariantsAndPrices(cancellationToken);
             await UpdateInStockStatuses(cancellationToken);
+            await UpdateSpecifications(cancellationToken);
+            
+            ApplyAllVisitors();
         }
 
         private async Task LoadLocalProductsList()
@@ -204,6 +222,28 @@ namespace SqdcWatcher.Services
                     newVariants.Add(dbVariant);
                     dbContext.ProductVariants.Add(dbVariant);
                     product.Variants.Add(dbVariant);
+                }
+            }
+        }
+
+        private async Task UpdateSpecifications(CancellationToken cancellationToken)
+        {
+            IEnumerable<ProductVariant> variantsWithoutSpecs = localProducts.Values
+                .SelectMany(p => p.Variants)
+                .Where(pv => !pv.Specifications.Any());
+            foreach (ProductVariant variant in variantsWithoutSpecs)
+            {
+                logger.LogInformation($"Fetching specifications for productId={variant.ProductId}, variantId={variant.Id}");
+                try
+                {
+                    SpecificationsResponse response =
+                        await restClient.GetSpecifications(variant.ProductId, variant.Id.ToString(), cancellationToken);
+                    specificationsMapper.Map(response, variant.Specifications);
+                    await dbContext.SpecificationAttributes.AddRangeAsync(variant.Specifications, cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, $"Error fetching or parsing the specifications of {variant}");
                 }
             }
         }
