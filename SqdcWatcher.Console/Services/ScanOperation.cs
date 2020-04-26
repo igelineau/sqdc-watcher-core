@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,13 +16,13 @@ using XFactory.SqdcWatcher.ConsoleApp.Visitors;
 using XFactory.SqdcWatcher.Data.Entities;
 using XFactory.SqdcWatcher.DataAccess;
 
-#endregion
-
 namespace XFactory.SqdcWatcher.ConsoleApp.Services
 {
     [UsedImplicitly]
     public class ScanOperation : IScanOperation
     {
+        private readonly TimeSpan refreshProductsListInterval = TimeSpan.FromMinutes(30);
+        
         private readonly Func<SqdcDbContext> dbContextFactory;
         private readonly Dictionary<string, Product> localProducts = new Dictionary<string, Product>();
         private readonly ILogger<ScanOperation> logger;
@@ -33,7 +31,6 @@ namespace XFactory.SqdcWatcher.ConsoleApp.Services
 
         private readonly ProductMapper productMapper;
         private readonly IEnumerable<VisitorBase<Product>> productVisitors;
-        private readonly TimeSpan refreshProductsListInterval = TimeSpan.FromMinutes(15);
         private readonly SqdcRestApiClient restClient;
         private readonly SlackPostWebHookClient slackPostClient;
         private readonly SpecificationsMapper specificationsMapper;
@@ -137,14 +134,22 @@ namespace XFactory.SqdcWatcher.ConsoleApp.Services
                 }
             }
 
-            logger.LogInformation("Summary of changes to apply to database:");
-            foreach ((Type key, (int nbAdded, int nbModified)) in numberOfEntriesByType)
+            if (numberOfEntriesByType.Values.Any(v => v.nbAdded + v.nbModified > 0))
             {
-                if (nbAdded + nbModified > 0)
+                logger.LogInformation("Summary of changes to apply to database:");
+                foreach ((Type key, (int nbAdded, int nbModified)) in numberOfEntriesByType)
                 {
-                    logger.LogInformation($"{key.Name}: {nbAdded} added, {nbModified} modified");
+                    if (nbAdded + nbModified > 0)
+                    {
+                        logger.LogInformation($"{key.Name}: {nbAdded} added, {nbModified} modified");
+                    }
                 }
             }
+            else
+            {
+                logger.LogInformation("No change to persist to database.");
+            }
+            
         }
 
         private async Task ExecuteInternal(CancellationToken cancellationToken)
