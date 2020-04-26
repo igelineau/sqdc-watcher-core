@@ -1,4 +1,4 @@
-namespace SqdcWatcher.Services
+namespace XFactory.SqdcWatcher.ConsoleApp.Services
 {
     public enum StockStatusChangeResult
     {

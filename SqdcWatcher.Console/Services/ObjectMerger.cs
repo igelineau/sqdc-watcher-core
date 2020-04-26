@@ -9,7 +9,7 @@ using JetBrains.Annotations;
 
 #endregion
 
-namespace SqdcWatcher.Services
+namespace XFactory.SqdcWatcher.ConsoleApp.Services
 {
     public static class ObjectMerger
     {
@@ -63,7 +63,7 @@ namespace SqdcWatcher.Services
                 {
                     MergeObjectsProperties(sourceItem, targetItem);
                 }
-                
+
                 augmenter?.Invoke(targetItem);
             }
         }

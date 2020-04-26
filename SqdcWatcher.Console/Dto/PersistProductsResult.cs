@@ -1,11 +1,11 @@
 #region
 
 using System.Collections.Generic;
-using Models.EntityFramework;
+using XFactory.SqdcWatcher.Data.Entities;
 
 #endregion
 
-namespace SqdcWatcher.Dto
+namespace XFactory.SqdcWatcher.ConsoleApp.Dto
 {
     public class PersistProductsResult
     {

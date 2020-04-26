@@ -8,11 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RestSharp;
-using SqdcWatcher.RestApiModels;
+using XFactory.SqdcWatcher.ConsoleApp.RestApiModels;
 
 #endregion
 
-namespace SqdcWatcher.Services
+namespace XFactory.SqdcWatcher.ConsoleApp.Services
 {
     public class SqdcRestApiClient : SqdcHttpClientBase
     {

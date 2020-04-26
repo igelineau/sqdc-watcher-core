@@ -6,12 +6,12 @@ using rs = RestSharp;
 
 #endregion
 
-namespace SqdcWatcher.Services
+namespace XFactory.SqdcWatcher.ConsoleApp.Services
 {
     public class SlackPostWebHookClient
     {
-        private readonly SqdcAppConfiguration config;
         private readonly rs.RestClient client;
+        private readonly SqdcAppConfiguration config;
 
         public SlackPostWebHookClient(IOptions<SqdcAppConfiguration> config)
         {

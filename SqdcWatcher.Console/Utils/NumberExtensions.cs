@@ -4,7 +4,7 @@ using System;
 
 #endregion
 
-namespace SqdcWatcher.Utils
+namespace XFactory.SqdcWatcher.ConsoleApp.Utils
 {
     public static class NumberExtensions
     {

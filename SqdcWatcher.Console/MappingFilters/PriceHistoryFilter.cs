@@ -2,16 +2,15 @@
 
 using System;
 using JetBrains.Annotations;
-using Models.EntityFramework;
-using SqdcWatcher.DataAccess.EntityFramework;
-using SqdcWatcher.DataObjects;
-using SqdcWatcher.Dto;
-using SqdcWatcher.Mappers;
-using SqdcWatcher.Utils;
+using XFactory.SqdcWatcher.ConsoleApp.Dto;
+using XFactory.SqdcWatcher.ConsoleApp.RestApiModels;
+using XFactory.SqdcWatcher.ConsoleApp.Utils;
+using XFactory.SqdcWatcher.Data.Entities;
+using XFactory.SqdcWatcher.DataAccess;
 
 #endregion
 
-namespace SqdcWatcher.MappingFilters
+namespace XFactory.SqdcWatcher.ConsoleApp.MappingFilters
 {
     [UsedImplicitly]
     public class PriceHistoryFilter : IMappingFilter<ProductVariantPrice, ProductVariant>

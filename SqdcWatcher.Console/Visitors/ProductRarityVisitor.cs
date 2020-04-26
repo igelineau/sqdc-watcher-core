@@ -1,10 +1,10 @@
 #region
 
-using Models.EntityFramework;
+using XFactory.SqdcWatcher.Data.Entities;
 
 #endregion
 
-namespace SqdcWatcher.Visitors
+namespace XFactory.SqdcWatcher.ConsoleApp.Visitors
 {
     public class ProductRarityVisitor : VisitorBase<Product>
     {

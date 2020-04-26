@@ -1,13 +1,9 @@
-#region
-
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
-using Models.EntityFramework;
+using XFactory.SqdcWatcher.Data.Entities;
 
-#endregion
-
-namespace SqdcWatcher.Visitors
+namespace XFactory.SqdcWatcher.ConsoleApp.Visitors
 {
     [UsedImplicitly]
     public class MoveSpecificationsToPropertiesVisitor : VisitorBase<Product>

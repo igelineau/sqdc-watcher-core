@@ -10,18 +10,17 @@ using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
-using Models.EntityFramework;
-using SqdcWatcher.DataAccess.EntityFramework;
-using SqdcWatcher.DataObjects;
-using SqdcWatcher.Dto;
-using SqdcWatcher.Mappers;
-using SqdcWatcher.RestApiModels;
-using SqdcWatcher.Utils;
-using SqdcWatcher.Visitors;
+using XFactory.SqdcWatcher.ConsoleApp.Dto;
+using XFactory.SqdcWatcher.ConsoleApp.Mappers;
+using XFactory.SqdcWatcher.ConsoleApp.RestApiModels;
+using XFactory.SqdcWatcher.ConsoleApp.Utils;
+using XFactory.SqdcWatcher.ConsoleApp.Visitors;
+using XFactory.SqdcWatcher.Data.Entities;
+using XFactory.SqdcWatcher.DataAccess;
 
 #endregion
 
-namespace SqdcWatcher.Services
+namespace XFactory.SqdcWatcher.ConsoleApp.Services
 {
     [UsedImplicitly]
     public class ScanOperation : IScanOperation
@@ -33,9 +32,11 @@ namespace SqdcWatcher.Services
         private readonly List<ProductVariant> newVariants = new List<ProductVariant>();
 
         private readonly ProductMapper productMapper;
+        private readonly IEnumerable<VisitorBase<Product>> productVisitors;
         private readonly TimeSpan refreshProductsListInterval = TimeSpan.FromMinutes(15);
         private readonly SqdcRestApiClient restClient;
         private readonly SlackPostWebHookClient slackPostClient;
+        private readonly SpecificationsMapper specificationsMapper;
 
         private readonly SqdcWebClient sqdcWebClient;
         private readonly VariantPricesMapper variantPricesMapper;
@@ -44,8 +45,6 @@ namespace SqdcWatcher.Services
         private SqdcDbContext dbContext;
 
         private bool mustUpdateProductsList;
-        private readonly SpecificationsMapper specificationsMapper;
-        private readonly IEnumerable<VisitorBase<Product>> productVisitors;
 
         public ScanOperation(
             SqdcWebClient sqdcWebClient,
@@ -79,7 +78,7 @@ namespace SqdcWatcher.Services
                 await InitializeOptions(forceProductsRefresh);
                 await ExecuteInternal(cancellationToken);
                 UpdateAppState();
-                
+
                 ReportSummaryOfPendingChanges();
                 await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -143,7 +142,7 @@ namespace SqdcWatcher.Services
             {
                 if (nbAdded + nbModified > 0)
                 {
-                    logger.LogInformation($"{key.Name}: {nbAdded} added, {nbModified} modified");    
+                    logger.LogInformation($"{key.Name}: {nbAdded} added, {nbModified} modified");
                 }
             }
         }
@@ -157,7 +156,7 @@ namespace SqdcWatcher.Services
             await RefreshVariantsAndPrices(cancellationToken);
             await UpdateInStockStatuses(cancellationToken);
             await UpdateSpecifications(cancellationToken);
-            
+
             ApplyAllVisitors();
         }
 

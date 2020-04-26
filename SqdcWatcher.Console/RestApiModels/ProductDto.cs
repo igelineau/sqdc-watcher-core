@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 #endregion
 
-namespace SqdcWatcher.RestApiModels
+namespace XFactory.SqdcWatcher.ConsoleApp.RestApiModels
 {
     public class ProductDto
     {

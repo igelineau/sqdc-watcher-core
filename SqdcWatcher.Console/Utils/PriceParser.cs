@@ -1,11 +1,11 @@
 #region
 
-using SqdcWatcher.DataObjects;
-using SqdcWatcher.Dto;
+using XFactory.SqdcWatcher.ConsoleApp.Dto;
+using XFactory.SqdcWatcher.ConsoleApp.RestApiModels;
 
 #endregion
 
-namespace SqdcWatcher.Utils
+namespace XFactory.SqdcWatcher.ConsoleApp.Utils
 {
     public class PriceParser
     {

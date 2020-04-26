@@ -1,13 +1,9 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Models.EntityFramework;
+using XFactory.SqdcWatcher.Data.Entities;
 
-#endregion
-
-namespace SqdcWatcher
+namespace XFactory.SqdcWatcher.ConsoleApp
 {
     internal class SqdcFormatter
     {

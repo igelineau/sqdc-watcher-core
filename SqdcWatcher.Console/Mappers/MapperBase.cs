@@ -2,10 +2,11 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using XFactory.SqdcWatcher.ConsoleApp.MappingFilters;
 
 #endregion
 
-namespace SqdcWatcher.Mappers
+namespace XFactory.SqdcWatcher.ConsoleApp.Mappers
 {
     public abstract class MapperBase<TSource, TDest> : IMapper<TSource, TDest> where TDest : new()
     {

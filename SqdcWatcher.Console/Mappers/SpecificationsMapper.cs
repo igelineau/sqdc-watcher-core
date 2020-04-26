@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
-using Models.EntityFramework;
-using SqdcWatcher.RestApiModels;
-using SqdcWatcher.Services;
+using XFactory.SqdcWatcher.ConsoleApp.MappingFilters;
+using XFactory.SqdcWatcher.ConsoleApp.RestApiModels;
+using XFactory.SqdcWatcher.ConsoleApp.Services;
+using XFactory.SqdcWatcher.Data.Entities;
 
-namespace SqdcWatcher.Mappers
+namespace XFactory.SqdcWatcher.ConsoleApp.Mappers 
 {
     [UsedImplicitly]
     public class SpecificationsMapper : MapperBase<SpecificationsResponse, List<SpecificationAttribute>>

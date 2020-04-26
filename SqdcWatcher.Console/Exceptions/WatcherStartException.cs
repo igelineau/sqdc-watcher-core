@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 #endregion
 
-namespace SqdcWatcher
+namespace XFactory.SqdcWatcher.ConsoleApp.Exceptions
 {
     [Serializable]
     internal class WatcherStartException : Exception

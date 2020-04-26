@@ -1,10 +1,10 @@
 #region
 
-using Models.EntityFramework;
+using XFactory.SqdcWatcher.Data.Entities;
 
 #endregion
 
-namespace SqdcWatcher.Services
+namespace XFactory.SqdcWatcher.ConsoleApp.Services
 {
     /// <summary>
     ///     This policy's job is to determine whether a ProductVariant stock status change should be ignored or not. This is to avoid excessive notifications.

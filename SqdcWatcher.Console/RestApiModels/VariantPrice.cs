@@ -1,4 +1,4 @@
-﻿namespace SqdcWatcher.DataObjects
+﻿namespace XFactory.SqdcWatcher.ConsoleApp.RestApiModels
 {
     public class ProductVariantPrice
     {

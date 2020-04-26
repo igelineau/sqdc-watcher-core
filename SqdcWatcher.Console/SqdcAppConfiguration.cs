@@ -1,4 +1,4 @@
-namespace SqdcWatcher
+namespace XFactory.SqdcWatcher.ConsoleApp
 {
     public class SqdcAppConfiguration
     {

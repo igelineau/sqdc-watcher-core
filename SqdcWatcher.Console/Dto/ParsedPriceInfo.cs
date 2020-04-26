@@ -1,4 +1,4 @@
-namespace SqdcWatcher.Dto
+namespace XFactory.SqdcWatcher.ConsoleApp.Dto
 {
     public class ParsedPriceInfo
     {

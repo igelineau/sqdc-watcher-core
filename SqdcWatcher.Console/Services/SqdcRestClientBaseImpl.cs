@@ -6,7 +6,7 @@ using RestClient.Net.Abstractions;
 
 #endregion
 
-namespace SqdcWatcher.Services
+namespace XFactory.SqdcWatcher.ConsoleApp.Services
 {
     public class SqdcRestClientBaseImpl
     {

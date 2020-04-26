@@ -1,7 +1,7 @@
 using System;
 using Humanizer;
 
-namespace SqdcWatcher.Utils
+namespace XFactory.SqdcWatcher.ConsoleApp.Utils
 {
     public static class TimespanExtensions
     {

@@ -1,14 +1,11 @@
-#region
-
 using System.Collections.Generic;
-using Models.EntityFramework;
-using SqdcWatcher.DataObjects;
-using SqdcWatcher.Dto;
-using SqdcWatcher.Utils;
+using XFactory.SqdcWatcher.ConsoleApp.Dto;
+using XFactory.SqdcWatcher.ConsoleApp.MappingFilters;
+using XFactory.SqdcWatcher.ConsoleApp.RestApiModels;
+using XFactory.SqdcWatcher.ConsoleApp.Utils;
+using XFactory.SqdcWatcher.Data.Entities;
 
-#endregion
-
-namespace SqdcWatcher.Mappers
+namespace XFactory.SqdcWatcher.ConsoleApp.Mappers
 {
     public class VariantPricesMapper : MapperBase<ProductVariantPrice, ProductVariant>
     {

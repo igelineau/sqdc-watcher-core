@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 #endregion
 
-namespace SqdcWatcher.Services
+namespace XFactory.SqdcWatcher.ConsoleApp.Services
 {
     public interface IScanOperation
     {

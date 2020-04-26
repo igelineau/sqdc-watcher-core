@@ -1,12 +1,13 @@
 #region
 
 using System.Collections.Generic;
-using Models.EntityFramework;
-using SqdcWatcher.RestApiModels;
+using XFactory.SqdcWatcher.ConsoleApp.MappingFilters;
+using XFactory.SqdcWatcher.ConsoleApp.RestApiModels;
+using XFactory.SqdcWatcher.Data.Entities;
 
 #endregion
 
-namespace SqdcWatcher.Mappers
+namespace XFactory.SqdcWatcher.ConsoleApp.Mappers
 {
     public class ProductMapper : MapperBase<ProductDto, Product>
     {

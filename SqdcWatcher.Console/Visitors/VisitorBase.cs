@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 #endregion
 
-namespace SqdcWatcher.Visitors
+namespace XFactory.SqdcWatcher.ConsoleApp.Visitors
 {
     public abstract class VisitorBase
     {
@@ -16,7 +16,7 @@ namespace SqdcWatcher.Visitors
             }
         }
     }
-    
+
     public abstract class VisitorBase<T>
     {
         public abstract void Visit(T instance);
@@ -28,7 +28,5 @@ namespace SqdcWatcher.Visitors
                 Visit(item);
             }
         }
-        
-        
     }
 }

@@ -1,4 +1,4 @@
-namespace SqdcWatcher.RestApiModels
+namespace XFactory.SqdcWatcher.ConsoleApp.RestApiModels
 {
     public class BaseResponse
     {

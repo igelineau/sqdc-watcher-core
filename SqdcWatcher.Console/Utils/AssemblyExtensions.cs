@@ -5,7 +5,7 @@ using System.Reflection;
 
 #endregion
 
-namespace SqdcWatcher.Utils
+namespace XFactory.SqdcWatcher.ConsoleApp.Utils
 {
     public static class AssemblyExtensions
     {

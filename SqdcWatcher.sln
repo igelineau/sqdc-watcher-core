@@ -1,10 +1,10 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.DataAccess.EntityFramework.Sqlite", "SqdcWatcher.DataAccess.EntityFramework.Sqlite\SqdcWatcher.DataAccess.EntityFramework.Sqlite.csproj", "{7BA25D49-E6F3-4B96-B370-DB0C16F34C43}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.DataAccess", "SqdcWatcher.DataAccess\SqdcWatcher.DataAccess.csproj", "{7BA25D49-E6F3-4B96-B370-DB0C16F34C43}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models.EntityFramework", "Models.EntityFramework\Models.EntityFramework.csproj", "{F7ABDBB4-1D7E-4819-A2ED-9C74D7A437FA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.Data.Entities", "SqdcWatcher.Data.Entities\SqdcWatcher.Data.Entities.csproj", "{F7ABDBB4-1D7E-4819-A2ED-9C74D7A437FA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher", "SqdcWatcher.Console\SqdcWatcher.csproj", "{FF0E3D21-FD19-4A86-924F-AE85DD3503AE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.ConsoleApp", "SqdcWatcher.Console\SqdcWatcher.ConsoleApp.csproj", "{FF0E3D21-FD19-4A86-924F-AE85DD3503AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

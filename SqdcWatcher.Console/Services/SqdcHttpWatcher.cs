@@ -1,16 +1,12 @@
-#region
-
 using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using SqdcWatcher.DataAccess.EntityFramework;
-using SqdcWatcher.Utils;
+using XFactory.SqdcWatcher.ConsoleApp.Exceptions;
+using XFactory.SqdcWatcher.ConsoleApp.Utils;
 
-#endregion
-
-namespace SqdcWatcher.Services
+namespace XFactory.SqdcWatcher.ConsoleApp.Services
 {
     public enum WatcherState
     {
@@ -23,11 +19,7 @@ namespace SqdcWatcher.Services
     {
         private readonly ILogger<SqdcHttpWatcher> logger;
         private readonly TimeSpan loopInterval = TimeSpan.FromMinutes(6);
-        private readonly SqdcProductsFetcher productsFetcher;
-        private readonly ProductsPersister productsPersister;
         private readonly Func<IScanOperation> scanOperationFactory;
-        private readonly SlackPostWebHookClient slackPostClient;
-        private readonly ISqdcDataAccess sqdcDataAccess;
         private bool isFullRefreshRequested;
         private bool isRefreshInProgress;
 
@@ -35,17 +27,9 @@ namespace SqdcWatcher.Services
 
         public SqdcHttpWatcher(
             ILogger<SqdcHttpWatcher> logger,
-            SqdcProductsFetcher productsFetcher,
-            ProductsPersister productsPersister,
-            ISqdcDataAccess sqdcDataAccess,
-            SlackPostWebHookClient slackPostClient,
             Func<IScanOperation> scanOperationFactory)
         {
             this.logger = logger;
-            this.productsFetcher = productsFetcher;
-            this.productsPersister = productsPersister;
-            this.sqdcDataAccess = sqdcDataAccess;
-            this.slackPostClient = slackPostClient;
             this.scanOperationFactory = scanOperationFactory;
         }
 

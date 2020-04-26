@@ -1,11 +1,11 @@
 #region
 
 using System;
-using Models.EntityFramework;
+using XFactory.SqdcWatcher.Data.Entities;
 
 #endregion
 
-namespace SqdcWatcher.Services
+namespace XFactory.SqdcWatcher.ConsoleApp.Services
 {
     public class VariantStockStatusUpdater
     {

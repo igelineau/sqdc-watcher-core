@@ -1,11 +1,10 @@
 #region
 
 using System.Collections.Generic;
-using SqdcWatcher.DataObjects;
 
 #endregion
 
-namespace SqdcWatcher.RestApiModels
+namespace XFactory.SqdcWatcher.ConsoleApp.RestApiModels
 {
     public class SpecificationsResponse : BaseResponse
     {

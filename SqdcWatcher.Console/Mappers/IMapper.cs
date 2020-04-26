@@ -1,4 +1,4 @@
-namespace SqdcWatcher.Mappers
+namespace XFactory.SqdcWatcher.ConsoleApp.Mappers
 {
     public interface IMapper<TSource, TDest>
     {

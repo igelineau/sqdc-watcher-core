@@ -1,10 +1,8 @@
 #region
 
-using SqdcWatcher.Mappers;
-
 #endregion
 
-namespace SqdcWatcher.MappingFilters
+namespace XFactory.SqdcWatcher.ConsoleApp.MappingFilters
 {
     public abstract class MappingFilterBase<TSource, TDest> : IMappingFilter<TSource, TDest>
         where TDest : class

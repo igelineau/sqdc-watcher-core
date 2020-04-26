@@ -12,19 +12,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Models.EntityFramework;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
-using SqdcWatcher.DataAccess.EntityFramework;
-using SqdcWatcher.Mappers;
-using SqdcWatcher.RestApiModels;
-using SqdcWatcher.Services;
-using SqdcWatcher.Visitors;
+using XFactory.SqdcWatcher.ConsoleApp.Mappers;
+using XFactory.SqdcWatcher.ConsoleApp.MappingFilters;
+using XFactory.SqdcWatcher.ConsoleApp.RestApiModels;
+using XFactory.SqdcWatcher.ConsoleApp.Services;
+using XFactory.SqdcWatcher.ConsoleApp.Visitors;
+using XFactory.SqdcWatcher.Data.Entities;
+using XFactory.SqdcWatcher.DataAccess;
 
 #endregion
 
-namespace SqdcWatcher
+namespace XFactory.SqdcWatcher.ConsoleApp
 {
     public static class Program
     {
@@ -124,12 +125,9 @@ namespace SqdcWatcher
             services.AddTransient<VariantStockStatusUpdater>();
             services.AddSingleton<SqdcRestApiClient>();
             services.AddSingleton<SqdcWebClient>();
-            services.AddSingleton<SqdcProductsFetcher>();
-            services.AddSingleton<ProductsPersister>();
             services.AddSingleton<ISqdcWatcher, SqdcHttpWatcher>();
             services.AddSingleton<SlackPostWebHookClient>();
             services.AddSingleton<BecameInStockTriggerPolicy>();
-            services.AddSingleton<StockHistoryPersister>();
 
             services.AddSingleton<ISqdcDataAccess, SqdcDataAccess>();
 

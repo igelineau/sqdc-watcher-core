@@ -1,12 +1,11 @@
 #region
 
 using System.Collections.Generic;
-using SqdcWatcher.DataObjects;
-using SqdcWatcher.Services;
+using XFactory.SqdcWatcher.ConsoleApp.Services;
 
 #endregion
 
-namespace SqdcWatcher.RestApiModels
+namespace XFactory.SqdcWatcher.ConsoleApp.RestApiModels
 {
     public class ProductVariantDto
     {

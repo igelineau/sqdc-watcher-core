@@ -1,11 +1,11 @@
 ﻿#region
 
 using System.Collections.Generic;
-using SqdcWatcher.Services;
+using XFactory.SqdcWatcher.ConsoleApp.Services;
 
 #endregion
 
-namespace SqdcWatcher.DataObjects
+namespace XFactory.SqdcWatcher.ConsoleApp.RestApiModels
 {
     public class SpecificationGroup
     {

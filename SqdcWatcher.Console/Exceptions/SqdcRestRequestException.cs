@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 
 #endregion
 
-namespace SqdcWatcher.Services
+namespace XFactory.SqdcWatcher.ConsoleApp.Exceptions
 {
     [Serializable]
     internal class SqdcRestRequestException : Exception

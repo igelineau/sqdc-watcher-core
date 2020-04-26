@@ -2,11 +2,11 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using SqdcWatcher.RestApiModels;
+using XFactory.SqdcWatcher.ConsoleApp.RestApiModels;
 
 #endregion
 
-namespace SqdcWatcher
+namespace XFactory.SqdcWatcher.ConsoleApp.Services
 {
     public interface ISqdcClient
     {

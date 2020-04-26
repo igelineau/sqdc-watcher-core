@@ -1,11 +1,11 @@
 #region
 
 using System.Collections.Generic;
-using SqdcWatcher.RestApiModels;
+using XFactory.SqdcWatcher.ConsoleApp.RestApiModels;
 
 #endregion
 
-namespace SqdcWatcher.Dto
+namespace XFactory.SqdcWatcher.ConsoleApp.Dto
 {
     public class ProductsListResult
     {

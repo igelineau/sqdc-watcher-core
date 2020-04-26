@@ -1,11 +1,11 @@
 #region
 
 using System.Diagnostics;
-using SqdcWatcher.RestApiModels;
+using XFactory.SqdcWatcher.ConsoleApp.RestApiModels;
 
 #endregion
 
-namespace SqdcWatcher.Services
+namespace XFactory.SqdcWatcher.ConsoleApp.Services
 {
     [DebuggerDisplay("{PropertyName} = {Value}")]
     public class SpecificationAttributeDto
