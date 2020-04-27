@@ -72,21 +72,12 @@ namespace XFactory.SqdcWatcher.ConsoleApp.Services
             foreach (Product product in products)
             {
                 string variantsAvailable = FormatVariantsAvailable(product);
-                builder.AppendLine($"*{FormatSlackProductPrefix(product)}{FormatNameWithType(product)}* / {product.Brand} {variantsAvailable}{product.Url}");
+                string prefix = FormatSlackProductPrefix(product);
+                string urlDisplayText = $"*{product.Brand} {product.Title} ({product.LevelTwoCategory})*";
+                builder.AppendLine($"{prefix} <{product.Url}|{urlDisplayText}> {variantsAvailable}".Trim());
             }
 
             return builder.ToString();
-        }
-
-        private static string FormatNameWithType(Product product)
-        {
-            string name = FormatName(product);
-            if (!string.IsNullOrWhiteSpace(product.CannabisType))
-            {
-                return $"{name}, {product.CannabisType}";
-            }
-
-            return name;
         }
 
         private static string FormatName(Product product)
