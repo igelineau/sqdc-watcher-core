@@ -1,6 +1,4 @@
-﻿#region
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,15 +13,14 @@ using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
-using XFactory.SqdcWatcher.ConsoleApp.Mappers;
-using XFactory.SqdcWatcher.ConsoleApp.MappingFilters;
-using XFactory.SqdcWatcher.ConsoleApp.RestApiModels;
-using XFactory.SqdcWatcher.ConsoleApp.Services;
-using XFactory.SqdcWatcher.ConsoleApp.Visitors;
+using XFactory.SqdcWatcher.Core;
+using XFactory.SqdcWatcher.Core.Mappers;
+using XFactory.SqdcWatcher.Core.MappingFilters;
+using XFactory.SqdcWatcher.Core.RestApiModels;
+using XFactory.SqdcWatcher.Core.Services;
+using XFactory.SqdcWatcher.Core.Visitors;
 using XFactory.SqdcWatcher.Data.Entities;
 using XFactory.SqdcWatcher.DataAccess;
-
-#endregion
 
 namespace XFactory.SqdcWatcher.ConsoleApp
 {

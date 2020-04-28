@@ -65,7 +65,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DataAccess.EntityFramework.Migrations\DataAccess.EntityFramework.Migrations.csproj" />
+    <ProjectReference Include="..\SqdcWatcher.Core\SqdcWatcher.Core.csproj" />
     <ProjectReference Include="..\SqdcWatcher.Data.Entities\SqdcWatcher.Data.Entities.csproj" />
     <ProjectReference Include="..\SqdcWatcher.DataAccess\SqdcWatcher.DataAccess.csproj" />
   </ItemGroup>

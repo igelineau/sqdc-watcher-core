@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
+        <RootNamespace>XFactory.SqdcWatcher.Core</RootNamespace>
+        <LangVersion>8</LangVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\SqdcWatcher.Data.Entities\SqdcWatcher.Data.Entities.csproj" />
+      <ProjectReference Include="..\SqdcWatcher.DataAccess\SqdcWatcher.DataAccess.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Alba.CsConsoleFormat" Version="1.0.0" />
+        <PackageReference Include="Humanizer" Version="2.8.2" />
+        <PackageReference Include="RestClient.NET" Version="3.2.0" />
+        <PackageReference Include="restsharp" Version="106.10.1" />
+        <PackageReference Include="anglesharp" Version="0.14.0" />
+    </ItemGroup>
+
+</Project>

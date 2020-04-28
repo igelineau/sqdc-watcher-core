@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.Data.Entities",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.ConsoleApp", "SqdcWatcher.Console\SqdcWatcher.ConsoleApp.csproj", "{FF0E3D21-FD19-4A86-924F-AE85DD3503AE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.Core", "SqdcWatcher.Core\SqdcWatcher.Core.csproj", "{7BC31864-936E-499C-AF94-94EDA9A3E916}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{FF0E3D21-FD19-4A86-924F-AE85DD3503AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF0E3D21-FD19-4A86-924F-AE85DD3503AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF0E3D21-FD19-4A86-924F-AE85DD3503AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BC31864-936E-499C-AF94-94EDA9A3E916}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BC31864-936E-499C-AF94-94EDA9A3E916}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BC31864-936E-499C-AF94-94EDA9A3E916}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BC31864-936E-499C-AF94-94EDA9A3E916}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -5,4 +5,8 @@
         <RootNamespace>XFactory.SqdcWatcher.Data.Entities</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Jetbrains.Annotations" Version="2020.1.0" />
+    </ItemGroup>
+
 </Project>

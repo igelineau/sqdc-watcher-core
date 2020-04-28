@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS VariantsToDelete;
-CREATE TEMPORARY TABLE VariantsToDelete AS SELECT Id, ProductId FROM ProductVariants WHERE ProductId = '694144002510-P';
+CREATE TEMPORARY TABLE VariantsToDelete AS SELECT Id, ProductId FROM ProductVariants WHERE ProductId = '627560010319-P';
 DELETE FROM SpecificationAttribute WHERE ProductVariantId IN (SELECT Id FROM VariantsToDelete);
-DELETE FROM Products WHERE Id IN (SELECT Id FROM VariantsToDelete);
+DELETE FROM Products WHERE Id IN (SELECT ProductId FROM VariantsToDelete);
 DELETE FROM ProductVariants WHERE Id IN (SELECT Id FROM VariantsToDelete);
 DROP TABLE VariantsToDelete;
 
