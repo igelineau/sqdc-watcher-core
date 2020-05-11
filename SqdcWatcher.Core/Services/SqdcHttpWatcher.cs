@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using XFactory.SqdcWatcher.Core.Exceptions;
@@ -12,7 +13,7 @@ namespace XFactory.SqdcWatcher.Core.Services
 {
     public enum WatcherState
     {
-        Idle = 0,
+        [UsedImplicitly] Idle = 0,
         Running,
         Stopped
     }
@@ -23,10 +24,10 @@ namespace XFactory.SqdcWatcher.Core.Services
         private readonly TimeSpan loopInterval = TimeSpan.FromMinutes(6);
         private readonly Func<IScanOperation> scanOperationFactory;
         private readonly IHostApplicationLifetime applicationLifetime;
-        private bool isFullRefreshRequested;
-        private bool isRefreshInProgress;
-
-        private bool isRefreshRequested;
+        
+        private volatile bool isFullRefreshRequested;
+        private volatile bool isRefreshInProgress;
+        private volatile bool isRefreshRequested;
 
         public SqdcHttpWatcher(
             ILogger<SqdcHttpWatcher> logger,
