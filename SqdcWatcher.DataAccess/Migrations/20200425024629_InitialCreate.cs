@@ -12,7 +12,7 @@ namespace XFactory.SqdcWatcher.DataAccess.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Products",
+                name: "Product",
                 columns: table => new
                 {
                     Id = table.Column<string>(nullable: false),
@@ -29,7 +29,7 @@ namespace XFactory.SqdcWatcher.DataAccess.Migrations
                 constraints: table => { table.PrimaryKey("PK_Products", x => x.Id); });
 
             migrationBuilder.CreateTable(
-                name: "ProductVariants",
+                name: "ProductVariant",
                 columns: table => new
                 {
                     Id = table.Column<long>(nullable: false),
@@ -47,7 +47,7 @@ namespace XFactory.SqdcWatcher.DataAccess.Migrations
                     table.ForeignKey(
                         name: "FK_ProductVariants_Products_ProductId",
                         column: x => x.ProductId,
-                        principalTable: "Products",
+                        principalTable: "Product",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -69,14 +69,14 @@ namespace XFactory.SqdcWatcher.DataAccess.Migrations
                     table.ForeignKey(
                         name: "FK_SpecificationAttribute_ProductVariants_ProductVariantId",
                         column: x => x.ProductVariantId,
-                        principalTable: "ProductVariants",
+                        principalTable: "ProductVariant",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProductVariants_ProductId",
-                table: "ProductVariants",
+                table: "ProductVariant",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
@@ -91,10 +91,10 @@ namespace XFactory.SqdcWatcher.DataAccess.Migrations
                 name: "SpecificationAttribute");
 
             migrationBuilder.DropTable(
-                name: "ProductVariants");
+                name: "ProductVariant");
 
             migrationBuilder.DropTable(
-                name: "Products");
+                name: "Product");
         }
     }
 }

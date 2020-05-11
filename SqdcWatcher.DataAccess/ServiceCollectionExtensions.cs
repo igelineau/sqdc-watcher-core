@@ -1,11 +1,8 @@
-#region
-
 using System;
-using Microsoft.Extensions.DependencyInjection;
+using XFactory.SqdcWatcher.DataAccess;
 
-#endregion
-
-namespace XFactory.SqdcWatcher.DataAccess
+// ReSharper disable once CheckNamespace
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
@@ -16,12 +13,12 @@ namespace XFactory.SqdcWatcher.DataAccess
             return serviceCollection;
         }
 
-        public static void AddFactory<TService, TImplementation>(this IServiceCollection services)
+        public static void AddFactory<TService, TImplementation>(this IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Scoped)
             where TService : class
             where TImplementation : class, TService
         {
             services.AddTransient<TService, TImplementation>();
-            services.AddSingleton<Func<TService>>(x => x.GetService<TService>);
+            services.AddScoped<Func<TService>>(x => x.GetService<TService>);
         }
     }
 }

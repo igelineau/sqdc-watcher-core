@@ -2,7 +2,7 @@ using System;
 using System.Net;
 using System.Runtime.Serialization;
 
-namespace XFactory.SqdcWatcher.ConsoleApp.Exceptions
+namespace XFactory.SqdcWatcher.Core.Exceptions
 {
     [Serializable]
     internal class SqdcRestRequestException : Exception

@@ -46,7 +46,7 @@ namespace XFactory.SqdcWatcher.Core.MappingFilters
                 var priceHistoryEntry = new PriceHistory
                 {
                     Timestamp = DateTime.Now,
-                    VariantId = destination.Id,
+                    ProductVariantId = destination.Id,
                     OldDisplayPrice = newDisplayPrice == null ? new double?() : destination.DisplayPrice,
                     NewDisplayPrice = newDisplayPrice,
                     OldListPrice = newListPrice == null ? new double?() : destination.ListPrice,

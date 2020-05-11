@@ -6,7 +6,7 @@ using XFactory.SqdcWatcher.Core.RestApiModels;
 
 #endregion
 
-namespace XFactory.SqdcWatcher.Core.Services
+namespace XFactory.SqdcWatcher.Core.Interfaces
 {
     public interface ISqdcClient
     {

@@ -7,7 +7,7 @@ namespace XFactory.SqdcWatcher.Data.Entities
     {
         public long Id { get; set; }
 
-        public long VariantId { get; set; }
+        public long ProductVariantId { get; set; }
 
         public ProductVariant ProductVariant { get; set; }
 

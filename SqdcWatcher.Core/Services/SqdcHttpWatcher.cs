@@ -2,8 +2,10 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using XFactory.SqdcWatcher.ConsoleApp.Exceptions;
+using XFactory.SqdcWatcher.Core.Exceptions;
+using XFactory.SqdcWatcher.Core.Interfaces;
 using XFactory.SqdcWatcher.Core.Utils;
 
 namespace XFactory.SqdcWatcher.Core.Services
@@ -20,6 +22,7 @@ namespace XFactory.SqdcWatcher.Core.Services
         private readonly ILogger<SqdcHttpWatcher> logger;
         private readonly TimeSpan loopInterval = TimeSpan.FromMinutes(6);
         private readonly Func<IScanOperation> scanOperationFactory;
+        private readonly IHostApplicationLifetime applicationLifetime;
         private bool isFullRefreshRequested;
         private bool isRefreshInProgress;
 
@@ -27,15 +30,17 @@ namespace XFactory.SqdcWatcher.Core.Services
 
         public SqdcHttpWatcher(
             ILogger<SqdcHttpWatcher> logger,
-            Func<IScanOperation> scanOperationFactory)
+            Func<IScanOperation> scanOperationFactory,
+            IHostApplicationLifetime applicationLifetime)
         {
             this.logger = logger;
             this.scanOperationFactory = scanOperationFactory;
+            this.applicationLifetime = applicationLifetime;
         }
 
         public WatcherState State { get; private set; }
 
-        public void Start(CancellationToken cancellationToken)
+        public Task Start(CancellationToken cancellationToken)
         {
             if (State == WatcherState.Running)
             {
@@ -43,7 +48,7 @@ namespace XFactory.SqdcWatcher.Core.Services
             }
 
             State = WatcherState.Running;
-            Task.Run(async () =>
+            return Task.Run(async () =>
             {
                 try
                 {
@@ -51,30 +56,17 @@ namespace XFactory.SqdcWatcher.Core.Services
                 }
                 catch (OperationCanceledException)
                 {
-                    // do nothing
+                    // Let the thread end normally
                 }
-                catch (Exception e)
+                catch (Exception e) when (!(e is OperationCanceledException))
                 {
-                    logger.LogError(e, e.Message);
+                    HandleLoopException(e);
                 }
                 finally
                 {
-                    State = WatcherState.Stopped;
+                    StopWorker();
                 }
             }, CancellationToken.None);
-        }
-
-        public void RequestRefresh(bool fullRefresh = false)
-        {
-            if (isRefreshInProgress)
-            {
-                logger.LogInformation("Ignoring a manual refresh request made while a refresh is already in progress.");
-            }
-            else
-            {
-                isRefreshRequested = true;
-                isFullRefreshRequested = fullRefresh;
-            }
         }
 
         private async Task Loop(CancellationToken cancelToken)
@@ -91,9 +83,10 @@ namespace XFactory.SqdcWatcher.Core.Services
                 {
                     await ExecuteScan(cancelToken);
                 }
-                catch (Exception e)
+                catch (Exception e) when (!(e is OperationCanceledException))
                 {
                     logger.LogError(e, "Error while executing scan within the watcher loop");
+                    throw;
                 }
                 finally
                 {
@@ -104,6 +97,33 @@ namespace XFactory.SqdcWatcher.Core.Services
                 logger.LogInformation(
                     $"Scan completed in {sw.Elapsed.ToSmartFormat()}. Next execution: {nextExecutionTime:H\\hmm}");
                 await SleepChunksAsync(loopInterval, cancelToken);
+            }
+        }
+
+        private void StopWorker()
+        {
+            State = WatcherState.Stopped;
+            logger.LogInformation("SqdcWatcher stopped");
+        }
+
+        private void HandleLoopException(Exception exception)
+        {
+            logger.LogError(exception, exception.Message);
+
+            logger.LogInformation("Stopping the application because of an error");
+            applicationLifetime.StopApplication();
+        }
+
+        public void RequestRefresh(bool fullRefresh = false)
+        {
+            if (isRefreshInProgress)
+            {
+                logger.LogInformation("Ignoring a manual refresh request made while a refresh is already in progress.");
+            }
+            else
+            {
+                isRefreshRequested = true;
+                isFullRefreshRequested = fullRefresh;
             }
         }
 

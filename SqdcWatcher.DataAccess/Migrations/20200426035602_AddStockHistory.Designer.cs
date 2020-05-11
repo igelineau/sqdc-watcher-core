@@ -17,20 +17,6 @@ namespace XFactory.SqdcWatcher.DataAccess.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.3");
 
-            modelBuilder.Entity("SqdcWatcher.Data.Entities.AppState", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime?>("LastProductsListRefresh")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AppState");
-                });
-
             modelBuilder.Entity("SqdcWatcher.Data.Entities.Product", b =>
                 {
                     b.Property<string>("Id")
@@ -65,7 +51,7 @@ namespace XFactory.SqdcWatcher.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products");
+                    b.ToTable("Product");
                 });
 
             modelBuilder.Entity("SqdcWatcher.Data.Entities.ProductVariant", b =>
@@ -99,7 +85,7 @@ namespace XFactory.SqdcWatcher.DataAccess.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductVariants");
+                    b.ToTable("ProductVariant");
                 });
 
             modelBuilder.Entity("SqdcWatcher.Data.Entities.SpecificationAttribute", b =>

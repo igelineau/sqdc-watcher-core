@@ -11,6 +11,6 @@ namespace XFactory.SqdcWatcher.DataAccess
         Task SaveProducts(List<Product> products);
         Task<AppState> GetAppStateAsync();
         Task UpdateAppStateAsync(AppState state);
-        void InsertPriceHistoryEntry(PriceHistory priceHistoryEntry);
+        Task InsertPriceHistoryEntry(PriceHistory priceHistoryEntry);
     }
 }

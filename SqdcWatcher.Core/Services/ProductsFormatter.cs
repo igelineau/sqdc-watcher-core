@@ -48,22 +48,26 @@ namespace XFactory.SqdcWatcher.Core.Services
 
         private static string FormatConsoleProductPrefix(Product p)
         {
-            if (p.IsNew)
-            {
-                return p.IsInStock() ? "[NEW] " : "[UPCOMING] ";
-            }
-
-            return "";
+            return string.Empty;
+            
+            // if (p.IsNew)
+            // {
+            //     return p.IsInStock() ? "[NEW] " : "[UPCOMING] ";
+            // }
+            //
+            // return "";
         }
 
         private static string FormatSlackProductPrefix(Product p)
         {
-            if (p.IsNew)
-            {
-                return p.IsInStock() ? ":weed: NEW :weed: " : ":star: UPCOMING :star: ";
-            }
-
             return "";
+            
+            // if (p.IsNew)
+            // {
+            //     return p.IsInStock() ? ":weed: NEW :weed: " : ":star: UPCOMING :star: ";
+            // }
+            //
+            // return "";
         }
 
         public static string FormatForSlackTable(IEnumerable<Product> products)
@@ -118,10 +122,10 @@ namespace XFactory.SqdcWatcher.Core.Services
                 components.Add(brand);
             }
 
-            string displayString = components[0];
+            string displayString = components.First();
             if (components.Count > 1)
             {
-                displayString += $" ({LimitLength(components[1], 12)})";
+                displayString += $" ({LimitLength(components.ElementAt(1), 12)})";
             }
             else
             {

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using XFactory.SqdcWatcher.Data.Entities;
 
 #endregion
@@ -15,9 +16,12 @@ namespace XFactory.SqdcWatcher.DataAccess
     {
         private readonly Func<SqdcDbContext> dbContextFactory;
 
-        public SqdcDataAccess(Func<SqdcDbContext> dbContextFactory)
+        public SqdcDataAccess(Func<SqdcDbContext> dbContextFactory, ILogger<SqdcDataAccess> logger)
         {
             this.dbContextFactory = dbContextFactory;
+            
+            using SqdcDbContext context = dbContextFactory();
+            logger.LogInformation($"Using ConnectionString: {context.GetConnectionString()}");
         }
 
         public async Task<IEnumerable<Product>> GetProductsWithRelationsAsync(bool asTracking = false)
@@ -50,7 +54,7 @@ namespace XFactory.SqdcWatcher.DataAccess
             dbContext.Products.UpdateRange(products.Where(p => existingProductIds.Contains(p.Id)));
 
             // do not update existing Specifications
-            IEnumerable<SpecificationAttribute> attributesToDetach = dbContext.SpecificationAttributes.Local
+            IEnumerable<SpecificationAttribute> attributesToDetach = dbContext.SpecificationAttribute.Local
                 .Where(sa => dbContext.Entry(sa).State == EntityState.Modified)
                 .ToList();
             foreach (SpecificationAttribute spec in attributesToDetach)
@@ -74,9 +78,11 @@ namespace XFactory.SqdcWatcher.DataAccess
             await context.SaveChangesAsync();
         }
 
-        public void InsertPriceHistoryEntry(PriceHistory priceHistoryEntry)
+        public async Task InsertPriceHistoryEntry(PriceHistory priceHistoryEntry)
         {
-            throw new NotImplementedException();
+            await using SqdcDbContext context = dbContextFactory();
+            await context.PriceHistory.AddAsync(priceHistoryEntry);
+            await context.SaveChangesAsync();
         }
     }
 }

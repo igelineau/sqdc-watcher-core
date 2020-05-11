@@ -4,7 +4,6 @@ using System.Diagnostics;
 
 namespace XFactory.SqdcWatcher.Data.Entities
 {
-    [Table("SpecificationAttribute")]
     [DebuggerDisplay("{PropertyName} = {Value}")]
     public class SpecificationAttribute
     {

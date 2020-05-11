@@ -2,40 +2,42 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
 using Microsoft.Extensions.Logging;
 using RestSharp;
+using XFactory.SqdcWatcher.Core.Interfaces;
 using XFactory.SqdcWatcher.Core.RestApiModels;
 
 namespace XFactory.SqdcWatcher.Core.Services
 {
-    public class SqdcWebClient : SqdcHttpClientBase
+    public class SqdcProductsFetcher : SqdcHttpClientBase, IRemoteStore<ProductDto>
     {
         private readonly IBrowsingContext htmlContext;
-        private readonly ILogger<SqdcWebClient> logger;
+        private readonly ILogger<SqdcProductsFetcher> logger;
 
-        public SqdcWebClient(ILogger<SqdcWebClient> logger) : base($"{BASE_DOMAIN}/{DEFAULT_LOCALE}")
+        public SqdcProductsFetcher(ILogger<SqdcProductsFetcher> logger) : base($"{BASE_DOMAIN}/{DEFAULT_LOCALE}")
         {
             client.AddDefaultHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 
             this.logger = logger;
-            IConfiguration htmlParserConfig = Configuration.Default;
+            IConfiguration htmlParserConfig = AngleSharp.Configuration.Default;
             htmlContext = BrowsingContext.New(htmlParserConfig);
         }
 
-        public async IAsyncEnumerable<ProductDto> GetProductSummariesAsync()
+        public async IAsyncEnumerable<ProductDto> GetAllItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var completeList = new Dictionary<string, ProductDto>();
             int currentPage = 1;
             bool hasReachedEnd = false;
-            Stopwatch sw = Stopwatch.StartNew();
+            var sw = Stopwatch.StartNew();
 
             do
             {
-                ProductPageResult pageResult = await GetProductSummariesPage(currentPage);
+                ProductPageResult pageResult = await GetProductSummariesPage(currentPage, cancellationToken);
                 foreach (ProductDto productDto in pageResult.Products)
                 {
                     if (!completeList.ContainsKey(productDto.Id))
@@ -55,15 +57,15 @@ namespace XFactory.SqdcWatcher.Core.Services
                 }
             } while (!hasReachedEnd);
 
-            logger.LogInformation($"{currentPage - 1} pages fetched from SQDC HTML website in {Math.Round(sw.Elapsed.TotalSeconds)}s");
+            logger.LogInformation($"{completeList.Count} products discovered from the SQDC website in {Math.Round(sw.Elapsed.TotalSeconds)}s");
         }
 
-        public async Task<ProductPageResult> GetProductSummariesPage(int pageNumber)
+        private async Task<ProductPageResult> GetProductSummariesPage(int pageNumber)
         {
             return await GetProductSummariesPage(pageNumber, CancellationToken.None);
         }
 
-        public async Task<ProductPageResult> GetProductSummariesPage(int pageNumber, CancellationToken cancelToken)
+        private async Task<ProductPageResult> GetProductSummariesPage(int pageNumber, CancellationToken cancelToken)
         {
             var request = new RestRequest("Search");
             request.AddQueryParameter("SortDirection", "asc");

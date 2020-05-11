@@ -51,7 +51,7 @@ namespace XFactory.SqdcWatcher.DataAccess.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Products");
+                    b.ToTable("Product");
                 });
 
             modelBuilder.Entity("SqdcWatcher.Data.Entities.ProductVariant", b =>
@@ -85,7 +85,7 @@ namespace XFactory.SqdcWatcher.DataAccess.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductVariants");
+                    b.ToTable("ProductVariant");
                 });
 
             modelBuilder.Entity("SqdcWatcher.Data.Entities.SpecificationAttribute", b =>
