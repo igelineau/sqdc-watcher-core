@@ -8,7 +8,7 @@ namespace XFactory.SqdcWatcher.Data.Entities
     [DebuggerDisplay("{Title} from {ProducerName} ({LevelTwoCategory})")]
     public sealed class Product
     {
-        public string Id { get; }
+        public string Id { get; set; }
 
         public string Title { get; set; }
 
@@ -41,9 +41,11 @@ namespace XFactory.SqdcWatcher.Data.Entities
             IsNew = true;
         }
 
-        public List<ProductVariant> GetAvailableVariants()
+        public IEnumerable<ProductVariant> GetAvailableVariants() => Variants.Where(v => v.InStock);
+
+        public bool IsInStock()
         {
-            return Variants.Where(v => v.InStock).ToList();
+            return Variants.Any(v => v.InStock);
         }
 
         public ProductVariant AddOrGetVariant(ProductVariant variant)
@@ -60,16 +62,6 @@ namespace XFactory.SqdcWatcher.Data.Entities
             }
 
             return existingVariant ?? variant;
-        }
-
-        public ProductVariant GetVariantById(long variantId)
-        {
-            return Variants.FirstOrDefault(v => v.Id == variantId);
-        }
-
-        public bool IsInStock()
-        {
-            return Variants.Any(v => v.InStock);
         }
 
         private bool Equals(Product other)

@@ -1,6 +1,6 @@
 using System.Linq;
 
-namespace XFactory.SqdcWatcher.Data.Entities.Extensions
+namespace XFactory.SqdcWatcher.Data.Entities
 {
     public static class ProductExtensions
     {
