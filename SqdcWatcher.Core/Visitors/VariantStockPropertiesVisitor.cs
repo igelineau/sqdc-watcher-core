@@ -5,7 +5,7 @@ namespace XFactory.SqdcWatcher.Core.Visitors
 {
     public class VariantStockPropertiesVisitor : VisitorBase<ProductVariant>
     {
-        public override void Visit(ProductVariant instance)
+        protected override void Visit(ProductVariant instance)
         {
             if (instance.InStock)
             {

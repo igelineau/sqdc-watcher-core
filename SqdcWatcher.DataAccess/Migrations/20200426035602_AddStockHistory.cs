@@ -1,9 +1,9 @@
-﻿#region
+﻿
 
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.DataAccess.Migrations
 {

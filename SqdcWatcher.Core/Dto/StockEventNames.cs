@@ -1,8 +1,8 @@
 namespace XFactory.SqdcWatcher.Core.Dto
 {
-    public class StockEventNames
+    public static class StockEventNames
     {
-        public const string IN_STOCK = "IN_STOCK";
-        public const string OUT_OF_STOCK = "OUT_OF_STOCK";
+        public const string InStock = "IN_STOCK";
+        public const string OutOfStock = "OUT_OF_STOCK";
     }
 }

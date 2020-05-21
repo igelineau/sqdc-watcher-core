@@ -22,7 +22,7 @@ namespace XFactory.SqdcWatcher.Core
             }));
         }
         
-        public static void AddAllImplementationsTransient(this IServiceCollection collection, Type baseType)
+        public static void AddGenericOpenTypeTransient(this IServiceCollection collection, Type baseType)
         {
             IEnumerable<Type> typesToAdd = Assembly.GetExecutingAssembly()
                 .GetTypes()

@@ -1,4 +1,4 @@
-#region
+
 
 using System;
 using System.IO;
@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.Extensions.Hosting;
 using XFactory.SqdcWatcher.Data.Entities;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.DataAccess
 {
@@ -75,7 +75,7 @@ namespace XFactory.SqdcWatcher.DataAccess
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //This will singularize all table names
+            //This will make all table names singular
             foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
             {
                 entityType.SetTableName(entityType.DisplayName());

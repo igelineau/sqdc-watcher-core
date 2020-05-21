@@ -1,9 +1,9 @@
-#region
+
 
 using System;
 using XFactory.SqdcWatcher.Data.Entities;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.Core.Services
 {

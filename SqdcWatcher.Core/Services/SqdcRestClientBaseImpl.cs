@@ -1,10 +1,10 @@
-#region
+
 
 using System;
 using RestClient.Net;
 using RestClient.Net.Abstractions;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.Core.Services
 {

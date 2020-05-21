@@ -2,9 +2,9 @@
 
 namespace SqdcWatcher.ConsolePlayground
 {
-    class Program
+    static class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             while (true)
             {

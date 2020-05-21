@@ -13,8 +13,6 @@ namespace SqdcWatcher.Slack
 {
     public class SlackClient : ISlackClient
     {
-        private const string SlackBaseUrl = "https://slack.com/api";
-        
         private readonly ILogger<SlackClient> logger;
         private readonly RestClient client;
         private readonly SlackConfiguration config;
@@ -25,7 +23,7 @@ namespace SqdcWatcher.Slack
         {
             this.logger = logger;
             this.config = config.Value;
-            client = new RestClient(SlackBaseUrl)
+            client = new RestClient(config.Value.ApiBaseUrl)
             {
                 Authenticator = new OAuth2AuthorizationRequestHeaderAuthenticator(this.config.AccessToken, "Bearer")
             };

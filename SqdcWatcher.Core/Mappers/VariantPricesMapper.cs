@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using XFactory.SqdcWatcher.Core.Dto;
 using XFactory.SqdcWatcher.Core.MappingFilters;
 using XFactory.SqdcWatcher.Core.RestApiModels;
@@ -7,37 +8,37 @@ using XFactory.SqdcWatcher.Data.Entities;
 
 namespace XFactory.SqdcWatcher.Core.Mappers
 {
+    [UsedImplicitly]
     public class VariantPricesMapper : MapperBase<ProductVariantPrice, ProductVariant>
     {
         public VariantPricesMapper(IEnumerable<IMappingFilter<ProductVariantPrice, ProductVariant>> mappingFilters) : base(mappingFilters)
         {
         }
 
-        protected override ProductVariant PerformMapping(ProductVariantPrice sourcePriceInfo, ProductVariant dest)
+        protected override ProductVariant PerformMapping(ProductVariantPrice source, ProductVariant destination)
         {
-            dest ??= CreateDestinationInstance();
-            if (dest.Id == 0)
-            {
-                dest.Id = long.Parse(sourcePriceInfo.VariantId);
-            }
-
-            ParsedPriceInfo parsedPrices = PriceParser.ParseVariantPrice(sourcePriceInfo);
+            ParsedPriceInfo parsedPrices = PriceParser.ParseVariantPrice(source);
             if (parsedPrices.ListPrice != null)
             {
-                dest.ListPrice = parsedPrices.ListPrice.Value;
+                destination.ListPrice = parsedPrices.ListPrice.Value;
             }
 
             if (parsedPrices.DisplayPrice != null)
             {
-                dest.DisplayPrice = parsedPrices.DisplayPrice.Value;
+                destination.DisplayPrice = parsedPrices.DisplayPrice.Value;
             }
 
             if (parsedPrices.PricePerGram != null)
             {
-                dest.PricePerGram = parsedPrices.PricePerGram.Value;
+                destination.PricePerGram = parsedPrices.PricePerGram.Value;
             }
 
-            return dest;
+            return destination;
+        }
+
+        protected override ProductVariant CreateDestinationInstance(ProductVariantPrice source)
+        {
+            return new ProductVariant(long.Parse(source.VariantId));
         }
     }
 }

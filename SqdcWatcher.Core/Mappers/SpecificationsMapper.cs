@@ -15,15 +15,20 @@ namespace XFactory.SqdcWatcher.Core.Mappers
         {
         }
 
-        protected override List<SpecificationAttribute> PerformMapping(SpecificationsResponse source, List<SpecificationAttribute> dest)
+        protected override List<SpecificationAttribute> PerformMapping(SpecificationsResponse source, List<SpecificationAttribute> destination)
         {
             List<SpecificationAttributeDto> attributes = source.Groups.SelectMany(g => g.Attributes).ToList();
-            dest.MergeListById(
+            destination.MergeListById(
                 attributes,
                 x => x.PropertyName,
                 x => x.PropertyName,
                 spec => spec.ProductVariantId = long.Parse(source.VariantId));
-            return dest;
+            return destination;
+        }
+
+        protected override List<SpecificationAttribute> CreateDestinationInstance(SpecificationsResponse source)
+        {
+            return new List<SpecificationAttribute>();
         }
     }
 }

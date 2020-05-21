@@ -1,4 +1,4 @@
-#region
+
 
 using System;
 using System.Collections.Generic;
@@ -7,16 +7,13 @@ using System.Text;
 using Alba.CsConsoleFormat;
 using XFactory.SqdcWatcher.Data.Entities;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.Core.Services
 {
-    public class ProductsFormatter
+    public static class ProductsFormatter
     {
-        private const int TITLE_MAX_WIDTH = 20;
-        private const int STRAIN_MAX_WIDTH = 25;
-        private const int SINGLE_BRANDING_MAX_WIDTH = 25;
-        private const int DUAL_BRANDING_MAX_COMP_WIDTH = 12;
+        private const int StrainMaxWidth = 25;
 
         public static void WriteProductsTableToConsole(IEnumerable<Product> products)
         {
@@ -37,7 +34,7 @@ namespace XFactory.SqdcWatcher.Core.Services
                             new Cell("Url") {Stroke = headerThickness},
                             products.Select(p => new[]
                             {
-                                new Cell(FormatConsoleProductPrefix(p) + p.Title),
+                                new Cell(p.Title),
                                 new Cell(FormatBrandAndSupplier(p)),
                                 new Cell(FormatVariantsAvailable(p)),
                                 new Cell(p.Url),
@@ -46,28 +43,15 @@ namespace XFactory.SqdcWatcher.Core.Services
                     }));
         }
 
-        private static string FormatConsoleProductPrefix(Product p)
+        private static string FormatNewProductPrefix(Product p)
         {
-            return string.Empty;
+            string result = "";
+            if (p.IsNew)
+            {
+                result = p.IsInStock() ? "[NEW] " : "[UPCOMING] ";
+            }
             
-            // if (p.IsNew)
-            // {
-            //     return p.IsInStock() ? "[NEW] " : "[UPCOMING] ";
-            // }
-            //
-            // return "";
-        }
-
-        private static string FormatSlackProductPrefix(Product p)
-        {
-            return "";
-            
-            // if (p.IsNew)
-            // {
-            //     return p.IsInStock() ? ":weed: NEW :weed: " : ":star: UPCOMING :star: ";
-            // }
-            //
-            // return "";
+            return result;
         }
 
         public static string FormatForSlackTable(IEnumerable<Product> products)
@@ -76,7 +60,7 @@ namespace XFactory.SqdcWatcher.Core.Services
             foreach (Product product in products)
             {
                 string variantsAvailable = FormatVariantsAvailable(product);
-                string prefix = FormatSlackProductPrefix(product);
+                string prefix = FormatNewProductPrefix(product);
                 string urlDisplayText = $"*{product.Brand} {product.Title} ({product.LevelTwoCategory})*";
                 builder.AppendLine($"{prefix} <{product.Url}|{urlDisplayText}> {variantsAvailable}".Trim());
             }
@@ -87,7 +71,7 @@ namespace XFactory.SqdcWatcher.Core.Services
         private static string FormatName(Product product)
         {
             string name = product.Title;
-            string strain = LimitLength(product.Strain, STRAIN_MAX_WIDTH);
+            string strain = LimitLength(product.Strain, StrainMaxWidth);
             string finalName;
             if (string.IsNullOrEmpty(strain) || strain.Equals(name, StringComparison.OrdinalIgnoreCase))
             {

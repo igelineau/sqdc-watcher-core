@@ -1,5 +1,3 @@
-#region
-
 using System;
 using JetBrains.Annotations;
 using XFactory.SqdcWatcher.Core.Dto;
@@ -8,7 +6,7 @@ using XFactory.SqdcWatcher.Core.Utils;
 using XFactory.SqdcWatcher.Data.Entities;
 using XFactory.SqdcWatcher.DataAccess;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.Core.MappingFilters
 {

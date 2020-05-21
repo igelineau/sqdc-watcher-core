@@ -9,13 +9,13 @@ using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using SqdcWatcher.Slack.DependencyInjection;
 using XFactory.SqdcWatcher.Core;
-using XFactory.SqdcWatcher.Core.Caching;
 using XFactory.SqdcWatcher.Core.Configuration;
 using XFactory.SqdcWatcher.Core.Interfaces;
 using XFactory.SqdcWatcher.Core.Mappers;
 using XFactory.SqdcWatcher.Core.MappingFilters;
 using XFactory.SqdcWatcher.Core.RestApiModels;
 using XFactory.SqdcWatcher.Core.Services;
+using XFactory.SqdcWatcher.Core.SiteCrawling;
 using XFactory.SqdcWatcher.Core.Visitors;
 using XFactory.SqdcWatcher.DataAccess;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
@@ -41,7 +41,7 @@ namespace XFactory.SqdcWatcher.ConsoleApp
         private static void ConfigureServices(HostBuilderContext hostContext, IServiceCollection services)
         {
             services.AddHostedService<SqdcWorkerService>();
-            //services.AddHostedService<ConsoleKeyBindingsService>();
+            services.AddTransient<ConsoleInputInterface>();
 
             IConfiguration config = hostContext.Configuration;
             services.Configure<SqdcConfiguration>(config.GetSection("Sqdc"));
@@ -53,9 +53,9 @@ namespace XFactory.SqdcWatcher.ConsoleApp
             services.AddSqdcDbContext();
             services.AddTransient<ISqdcDataAccess, SqdcDataAccess>();
 
-            services.AddAllImplementationsTransient(typeof(VisitorBase<>));
-            services.AddAllImplementationsTransient(typeof(IMapper<,>));
-            services.AddAllImplementationsTransient(typeof(IMappingFilter<,>));
+            services.AddGenericOpenTypeTransient(typeof(VisitorBase<>));
+            services.AddGenericOpenTypeTransient(typeof(IMapper<,>));
+            services.AddGenericOpenTypeTransient(typeof(IMappingFilter<,>));
             
             services.AddScoped<BecameInStockTriggerPolicy>();
 
@@ -90,8 +90,6 @@ namespace XFactory.SqdcWatcher.ConsoleApp
                 .WriteTo.Console(theme: AnsiConsoleTheme.Code)
                 .WriteTo.File(Path.Combine(logsDirectory, "all.log"), LogEventLevel.Information)
                 .WriteTo.File(Path.Combine(logsDirectory, "errors.log"), LogEventLevel.Error);
-
-            //Trace.Listeners.Add(new TextWriterTraceListener(Console.Out));
         }
     }
 }

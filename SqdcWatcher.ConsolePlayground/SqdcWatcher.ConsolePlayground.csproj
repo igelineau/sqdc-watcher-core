@@ -5,4 +5,9 @@
         <TargetFramework>netcoreapp3.1</TargetFramework>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="MediatR" Version="8.0.1" />
+      <PackageReference Include="SonarAnalyzer.CSharp" Version="8.7.0.17535" />
+    </ItemGroup>
+
 </Project>

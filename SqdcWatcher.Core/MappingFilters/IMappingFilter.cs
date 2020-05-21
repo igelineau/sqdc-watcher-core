@@ -1,7 +1,7 @@
 namespace XFactory.SqdcWatcher.Core.MappingFilters
 {
-    public interface IMappingFilter<TSource, TDest>
+    public interface IMappingFilter<in TSource, in TDest>
     {
-        public void Apply(TSource source, TDest dest);
+        public void Apply(TSource source, TDest destination);
     }
 }

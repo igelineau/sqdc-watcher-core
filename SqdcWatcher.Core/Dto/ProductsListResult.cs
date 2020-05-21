@@ -1,9 +1,9 @@
-#region
+
 
 using System.Collections.Generic;
 using XFactory.SqdcWatcher.Core.RestApiModels;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.Core.Dto
 {

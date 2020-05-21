@@ -1,14 +1,14 @@
-#region
+
 
 using System;
 using System.Runtime.Serialization;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.Core.Exceptions
 {
     [Serializable]
-    internal class WatcherStartException : Exception
+    public class WatcherStartException : Exception
     {
         public WatcherStartException()
         {

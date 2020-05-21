@@ -1,9 +1,9 @@
-#region
+
 
 using System.Diagnostics;
 using XFactory.SqdcWatcher.Core.RestApiModels;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.Core.Services
 {

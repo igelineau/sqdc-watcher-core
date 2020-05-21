@@ -1,7 +1,9 @@
 using System;
+using JetBrains.Annotations;
 
 namespace XFactory.SqdcWatcher.Data.Entities
 {
+    [PublicAPI]
     public class StockHistory
     {
         public long Id { get; set; }

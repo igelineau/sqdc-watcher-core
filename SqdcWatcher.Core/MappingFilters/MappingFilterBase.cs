@@ -1,6 +1,6 @@
-#region
 
-#endregion
+
+
 
 namespace XFactory.SqdcWatcher.Core.MappingFilters
 {

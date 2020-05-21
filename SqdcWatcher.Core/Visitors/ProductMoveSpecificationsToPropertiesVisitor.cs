@@ -8,15 +8,15 @@ namespace XFactory.SqdcWatcher.Core.Visitors
     [UsedImplicitly]
     public class MoveSpecificationsToPropertiesVisitor : VisitorBase<Product>
     {
-        public override void Visit(Product product)
+        protected override void Visit(Product instance)
         {
             bool hasAssignedProduct = false;
-            foreach (ProductVariant variant in product.Variants)
+            foreach (ProductVariant variant in instance.Variants)
             {
                 var specsNamesToRemove = new List<string>();
                 if (!hasAssignedProduct)
                 {
-                    specsNamesToRemove = SpecificationCopier.CopySpecificationsToObject(product, variant.Specifications);
+                    specsNamesToRemove = SpecificationCopier.CopySpecificationsToObject(instance, variant.Specifications);
                     hasAssignedProduct = true;
                 }
 

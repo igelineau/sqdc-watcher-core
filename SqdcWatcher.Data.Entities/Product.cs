@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics;
 using System.Linq;
 
 namespace XFactory.SqdcWatcher.Data.Entities
 {
     [DebuggerDisplay("{Title} from {ProducerName} ({LevelTwoCategory})")]
-    public class Product
+    public sealed class Product
     {
-        public string Id { get; set; }
+        public string Id { get; }
 
         public string Title { get; set; }
 
@@ -29,8 +28,18 @@ namespace XFactory.SqdcWatcher.Data.Entities
 
         public string TerpeneDetailed { get; set; }
         public string Brand { get; set; }
+        public bool IsNew { get; set; }
 
-        [NotMapped] public bool IsNew { get; set; }
+        private Product()
+        {
+            // for Entity Framework
+        }
+
+        public Product(string id)
+        {
+            Id = id;
+            IsNew = true;
+        }
 
         public List<ProductVariant> GetAvailableVariants()
         {
@@ -63,8 +72,7 @@ namespace XFactory.SqdcWatcher.Data.Entities
             return Variants.Any(v => v.InStock);
         }
 
-
-        protected bool Equals(Product other)
+        private bool Equals(Product other)
         {
             return Id == other.Id;
         }

@@ -9,10 +9,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
 using SqdcWatcher.Slack;
+using XFactory.SqdcWatcher.Core.Abstractions;
 using XFactory.SqdcWatcher.Core.Dto;
 using XFactory.SqdcWatcher.Core.Interfaces;
 using XFactory.SqdcWatcher.Core.Mappers;
 using XFactory.SqdcWatcher.Core.RestApiModels;
+using XFactory.SqdcWatcher.Core.SiteCrawling;
 using XFactory.SqdcWatcher.Core.Utils;
 using XFactory.SqdcWatcher.Core.Visitors;
 using XFactory.SqdcWatcher.Data.Entities;
@@ -29,7 +31,6 @@ namespace XFactory.SqdcWatcher.Core.Services
         private readonly Dictionary<string, Product> localProducts = new Dictionary<string, Product>();
         private readonly ILogger<ScanOperation> logger;
         private readonly List<Product> newProducts = new List<Product>();
-        private readonly List<ProductVariant> newVariants = new List<ProductVariant>();
 
         private readonly ProductMapper productMapper;
         private readonly IEnumerable<VisitorBase<Product>> productVisitors;
@@ -165,7 +166,7 @@ namespace XFactory.SqdcWatcher.Core.Services
             await UpdateInStockStatuses(cancellationToken);
             await UpdateSpecifications(cancellationToken);
 
-            ApplyAllVisitors();
+            VisitorsInvoker.ApplyVisitors(productVisitors, localProducts.Values);
         }
 
         private async Task LoadLocalProductsList(CancellationToken cancellationToken)
@@ -228,7 +229,6 @@ namespace XFactory.SqdcWatcher.Core.Services
 
                 if (isNew)
                 {
-                    newVariants.Add(dbVariant);
                     dbContext.ProductVariants.Add(dbVariant);
                     product.Variants.Add(dbVariant);
                 }
@@ -266,7 +266,7 @@ namespace XFactory.SqdcWatcher.Core.Services
                 StockStatusChangeResult result = variantStockStatusUpdater.SetStockStatus(variant, variantsIdsInStock.Contains(variant.Id));
                 if (result != StockStatusChangeResult.NotChanged)
                 {
-                    string eventName = result == StockStatusChangeResult.BecameInStock ? StockEventNames.IN_STOCK : StockEventNames.OUT_OF_STOCK;
+                    string eventName = result == StockStatusChangeResult.BecameInStock ? StockEventNames.InStock : StockEventNames.OutOfStock;
                     var stockHistoryEntry = new StockHistory
                     {
                         ProductVariantId = variant.Id,
@@ -276,11 +276,6 @@ namespace XFactory.SqdcWatcher.Core.Services
                     await dbContext.StockHistory.AddAsync(stockHistoryEntry, cancelToken);
                 }
             }
-        }
-
-        private void ApplyAllVisitors()
-        {
-            VisitorBase.ApplyVisitors(productVisitors, localProducts.Values);
         }
     }
 }

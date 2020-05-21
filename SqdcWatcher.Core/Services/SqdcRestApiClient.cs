@@ -1,4 +1,4 @@
-#region
+
 
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 using RestSharp;
 using XFactory.SqdcWatcher.Core.RestApiModels;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.Core.Services
 {
@@ -18,7 +18,7 @@ namespace XFactory.SqdcWatcher.Core.Services
     {
         private readonly ILogger<SqdcRestApiClient> logger;
 
-        public SqdcRestApiClient(ILogger<SqdcRestApiClient> logger) : base(BASE_DOMAIN + "/api")
+        public SqdcRestApiClient(ILogger<SqdcRestApiClient> logger) : base(BaseDomain + "/api")
         {
             this.logger = logger;
 
@@ -52,7 +52,7 @@ namespace XFactory.SqdcWatcher.Core.Services
             var request = new RestRequest(resource, Method.POST, DataFormat.Json);
             request.AddJsonBody(body);
 
-            IRestResponse<TResponseBody> response = await client.ExecutePostAsync<TResponseBody>(request, cancelToken);
+            IRestResponse<TResponseBody> response = await Client.ExecutePostAsync<TResponseBody>(request, cancelToken);
 
             logger.Log(LogLevel.Information, $"POST {sw.ElapsedMilliseconds}ms {resource}");
             LogRequest(request, response, sw.ElapsedMilliseconds);
@@ -80,7 +80,7 @@ namespace XFactory.SqdcWatcher.Core.Services
                 // ToString() here to have the method as a nice string otherwise it will just show the enum value
                 method = request.Method.ToString(),
                 // This will generate the actual Uri used in the request
-                uri = client.BuildUri(request),
+                uri = Client.BuildUri(request),
             };
 
             var responseToLog = new

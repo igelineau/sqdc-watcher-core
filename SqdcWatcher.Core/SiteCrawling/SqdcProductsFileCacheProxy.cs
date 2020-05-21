@@ -3,15 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using XFactory.SqdcWatcher.Core.RestApiModels;
-using XFactory.SqdcWatcher.Core.Services;
 
-namespace XFactory.SqdcWatcher.Core.Caching
+namespace XFactory.SqdcWatcher.Core.SiteCrawling
 {
     public class SqdcProductsFileCacheProxy : DefaultCachingProxy<ProductDto, SqdcProductsFetcher>
     {

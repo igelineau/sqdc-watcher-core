@@ -1,39 +1,32 @@
-#region
-
 using System.Collections.Generic;
 using System.Linq;
 using XFactory.SqdcWatcher.Core.MappingFilters;
 
-#endregion
-
 namespace XFactory.SqdcWatcher.Core.Mappers
 {
-    public abstract class MapperBase<TSource, TDest> : IMapper<TSource, TDest> where TDest : new()
+    public abstract class MapperBase<TSource, TDest> : IMapper<TSource, TDest>
     {
-        protected readonly IReadOnlyCollection<IMappingFilter<TSource, TDest>> MappingFilters;
+        private readonly IReadOnlyCollection<IMappingFilter<TSource, TDest>> mappingFilters;
 
         protected MapperBase(IEnumerable<IMappingFilter<TSource, TDest>> mappingFilters)
         {
-            MappingFilters = mappingFilters.ToList().AsReadOnly();
+            this.mappingFilters = mappingFilters.ToList().AsReadOnly();
         }
 
-        public TDest Map(TSource source, TDest dest)
+        public TDest Map(TSource source, TDest existingDest)
         {
-            if (dest == null)
+            existingDest ??= CreateDestinationInstance(source);
+
+            foreach (IMappingFilter<TSource, TDest> filter in mappingFilters)
             {
-                dest = CreateDestinationInstance();
+                filter.Apply(source, existingDest);
             }
 
-            foreach (IMappingFilter<TSource, TDest> filter in MappingFilters)
-            {
-                filter.Apply(source, dest);
-            }
-
-            return PerformMapping(source, dest);
+            return PerformMapping(source, existingDest);
         }
 
-        protected abstract TDest PerformMapping(TSource source, TDest dest);
+        protected abstract TDest PerformMapping(TSource source, TDest destination);
 
-        protected virtual TDest CreateDestinationInstance() => new TDest();
+        protected abstract TDest CreateDestinationInstance(TSource source);
     }
 }

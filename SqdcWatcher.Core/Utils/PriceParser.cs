@@ -1,13 +1,13 @@
-#region
+
 
 using XFactory.SqdcWatcher.Core.Dto;
 using XFactory.SqdcWatcher.Core.RestApiModels;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.Core.Utils
 {
-    public class PriceParser
+    public static class PriceParser
     {
         public static ParsedPriceInfo ParseVariantPrice(ProductVariantPrice rawPrices)
         {

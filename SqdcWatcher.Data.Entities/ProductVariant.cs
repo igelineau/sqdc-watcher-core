@@ -1,18 +1,15 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
-#endregion
-
 namespace XFactory.SqdcWatcher.Data.Entities
 {
-    public class ProductVariant
+    public sealed class ProductVariant
     {
-        public ProductVariant()
+        public ProductVariant(long id)
         {
+            Id = id;
             Specifications = new List<SpecificationAttribute>();
         }
 
@@ -43,19 +40,13 @@ namespace XFactory.SqdcWatcher.Data.Entities
             return Math.Abs(GramEquivalent) > 0.0001 ? $"{GramEquivalent}g" : "";
         }
 
-        private string GetSpecification(string propertyName)
-        {
-            SpecificationAttribute attribute = Specifications.FirstOrDefault(s => s.PropertyName == propertyName);
-            return attribute?.Value ?? "";
-        }
-
         public void SetProduct(Product product)
         {
             Product = product;
             product.Variants.Add(this);
         }
 
-        protected bool Equals(ProductVariant other)
+        private bool Equals(ProductVariant other)
         {
             return Id == other.Id;
         }

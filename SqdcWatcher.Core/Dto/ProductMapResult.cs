@@ -1,9 +1,9 @@
-#region
+
 
 using System.Collections.Generic;
 using XFactory.SqdcWatcher.Data.Entities;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.Core.Dto
 {

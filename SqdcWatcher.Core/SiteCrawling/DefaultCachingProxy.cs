@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using XFactory.SqdcWatcher.Core.Interfaces;
 
-namespace XFactory.SqdcWatcher.Core.Caching
+namespace XFactory.SqdcWatcher.Core.SiteCrawling
 {
     public abstract class DefaultCachingProxy<TEntity, TInnerStore> : IRemoteStore<TEntity>
         where TEntity : class

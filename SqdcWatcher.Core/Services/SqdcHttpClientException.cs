@@ -1,14 +1,14 @@
-#region
+
 
 using System;
 using System.Runtime.Serialization;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.Core.Services
 {
     [Serializable]
-    internal class SqdcHttpClientException : Exception
+    public class SqdcHttpClientException : Exception
     {
         public SqdcHttpClientException()
         {

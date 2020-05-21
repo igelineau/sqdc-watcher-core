@@ -1,12 +1,8 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using XFactory.SqdcWatcher.Data.Entities;
-
-#endregion
 
 namespace XFactory.SqdcWatcher.Core
 {

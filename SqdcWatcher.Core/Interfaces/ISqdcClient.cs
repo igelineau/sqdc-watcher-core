@@ -1,10 +1,10 @@
-#region
+
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using XFactory.SqdcWatcher.Core.RestApiModels;
 
-#endregion
+
 
 namespace XFactory.SqdcWatcher.Core.Interfaces
 {

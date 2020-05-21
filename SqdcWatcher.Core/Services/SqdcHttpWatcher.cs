@@ -24,10 +24,10 @@ namespace XFactory.SqdcWatcher.Core.Services
         private readonly TimeSpan loopInterval = TimeSpan.FromMinutes(6);
         private readonly Func<IScanOperation> scanOperationFactory;
         private readonly IHostApplicationLifetime applicationLifetime;
+        private readonly ManualResetEventSlim resumeLoopEvent;
         
         private volatile bool isFullRefreshRequested;
-        private volatile bool isRefreshInProgress;
-        private volatile bool isRefreshRequested;
+        private Stopwatch loopStopwatch;
 
         public SqdcHttpWatcher(
             ILogger<SqdcHttpWatcher> logger,
@@ -37,11 +37,20 @@ namespace XFactory.SqdcWatcher.Core.Services
             this.logger = logger;
             this.scanOperationFactory = scanOperationFactory;
             this.applicationLifetime = applicationLifetime;
+            resumeLoopEvent = new ManualResetEventSlim(true);
         }
 
         public WatcherState State { get; private set; }
 
         public Task Start(CancellationToken cancellationToken)
+        {
+            SetStartedState();
+            
+            return Task.Run(() => TryLoop(cancellationToken), CancellationToken.None)
+                .ContinueWith(t => StopWorker(), CancellationToken.None);
+        }
+
+        private void SetStartedState()
         {
             if (State == WatcherState.Running)
             {
@@ -49,56 +58,45 @@ namespace XFactory.SqdcWatcher.Core.Services
             }
 
             State = WatcherState.Running;
-            return Task.Run(async () =>
+        }
+
+        private async Task TryLoop(CancellationToken cancellationToken)
+        {
+            try
             {
-                try
-                {
-                    await Loop(cancellationToken);
-                }
-                catch (OperationCanceledException)
-                {
-                    // Let the thread end normally
-                }
-                catch (Exception e) when (!(e is OperationCanceledException))
-                {
-                    HandleLoopException(e);
-                }
-                finally
-                {
-                    StopWorker();
-                }
-            }, CancellationToken.None);
+                await Loop(cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Let the thread end normally
+            }
+            catch (Exception e)
+            {
+                HandleLoopException(e);
+            }
         }
 
         private async Task Loop(CancellationToken cancelToken)
         {
-            isRefreshInProgress = true;
-
             while (!cancelToken.IsCancellationRequested)
             {
-                logger.LogInformation("--- Watcher - Refresh products started ---");
-
-                Stopwatch sw = Stopwatch.StartNew();
-
-                try
-                {
-                    await ExecuteScan(cancelToken);
-                }
-                catch (Exception e) when (!(e is OperationCanceledException))
-                {
-                    logger.LogError(e, "Error while executing scan within the watcher loop");
-                    throw;
-                }
-                finally
-                {
-                    isFullRefreshRequested = false;
-                }
-
-                DateTime nextExecutionTime = DateTime.Now + loopInterval;
-                logger.LogInformation(
-                    $"Scan completed in {sw.Elapsed.ToSmartFormat()}. Next execution: {nextExecutionTime:H\\hmm}");
-                await SleepChunksAsync(loopInterval, cancelToken);
+                PrepareLoopIteration();
+                await TryExecuteScan(cancelToken);
+                LogLoopIterationCompleted();
+                BlockFor(loopInterval, cancelToken);
             }
+        }
+
+        private void LogLoopIterationCompleted()
+        {
+            DateTime nextExecutionTime = DateTime.Now + loopInterval;
+            logger.LogInformation(
+                $"Scan completed in {loopStopwatch.Elapsed.ToSmartFormat()}. Next execution: {nextExecutionTime:H\\hmm}");
+        }
+
+        private void PrepareLoopIteration()
+        {
+            loopStopwatch = Stopwatch.StartNew();
         }
 
         private void StopWorker()
@@ -115,44 +113,42 @@ namespace XFactory.SqdcWatcher.Core.Services
             applicationLifetime.StopApplication();
         }
 
-        public void RequestRefresh(bool fullRefresh = false)
+        private async Task TryExecuteScan(CancellationToken cancellationToken)
         {
-            if (isRefreshInProgress)
+            try
             {
-                logger.LogInformation("Ignoring a manual refresh request made while a refresh is already in progress.");
+                await ExecuteScan(cancellationToken);
+                ResetManualRefreshState();
             }
-            else
+            catch (Exception e) when (!(e is OperationCanceledException))
             {
-                isRefreshRequested = true;
-                isFullRefreshRequested = fullRefresh;
+                logger.LogError(e, "Error while executing scan within the watcher loop");
+                throw;
             }
         }
 
         private async Task ExecuteScan(CancellationToken cancelToken)
         {
+            logger.LogInformation("--- Watcher - Refresh products started ---");
             IScanOperation scanOperation = scanOperationFactory.Invoke();
             await scanOperation.Execute(isFullRefreshRequested, cancelToken);
         }
 
-        private async Task SleepChunksAsync(TimeSpan totalTime, CancellationToken cancelToken)
+        public void RequestRefresh(bool forceFullRefresh = false)
         {
-            isRefreshInProgress = false;
-            isRefreshRequested = false;
+            isFullRefreshRequested = forceFullRefresh;
+            resumeLoopEvent.Set();
+        }
 
-            TimeSpan totalWaited = TimeSpan.Zero;
-            TimeSpan chunkDuration = TimeSpan.FromMilliseconds(500);
+        private void BlockFor(TimeSpan timeToBlock, CancellationToken cancelToken)
+        {
+            resumeLoopEvent.Reset();
+            resumeLoopEvent.Wait(timeToBlock, cancelToken);
+        }
 
-            while (totalWaited < totalTime && !isRefreshRequested && !cancelToken.IsCancellationRequested)
-            {
-                await Task.Delay(chunkDuration, cancelToken).ConfigureAwait(false);
-                totalWaited += chunkDuration;
-            }
-
-            if (isRefreshRequested)
-            {
-                logger.LogInformation("Manual refresh was requested, proceeding...");
-                isRefreshRequested = false;
-            }
+        private void ResetManualRefreshState()
+        {
+            isFullRefreshRequested = false;
         }
     }
 }
