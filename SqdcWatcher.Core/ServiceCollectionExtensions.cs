@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using XFactory.SqdcWatcher.Core.RestApiModels;
 using XFactory.SqdcWatcher.Core.Services;
 using XFactory.SqdcWatcher.Data.Entities;
+using XFactory.SqdcWatcher.Data.Entities.Products;
 
 namespace XFactory.SqdcWatcher.Core
 {

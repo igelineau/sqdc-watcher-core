@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace XFactory.SqdcWatcher.Core.Visitors
+namespace XFactory.SqdcWatcher.Core.Abstractions
 {
     public abstract class VisitorBase<T>
     {

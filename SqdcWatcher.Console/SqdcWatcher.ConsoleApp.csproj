@@ -68,9 +68,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SqdcWatcher.Core\SqdcWatcher.Core.csproj" />
-    <ProjectReference Include="..\SqdcWatcher.Data.Entities\SqdcWatcher.Data.Entities.csproj" />
-    <ProjectReference Include="..\SqdcWatcher.DataAccess\SqdcWatcher.DataAccess.csproj" />
-    <ProjectReference Include="..\SqdcWatcher.Slack\SqdcWatcher.Slack.csproj" />
+    <ProjectReference Include="..\SqdcWatcher.Domain\SqdcWatcher.Domain.csproj" />
+    <ProjectReference Include="..\SqdcWatcher.Infrastructure.DataAccess\SqdcWatcher.Infrastructure.DataAccess.csproj" />
+    <ProjectReference Include="..\SqdcWatcher.Infrastructure.Slack\SqdcWatcher.Infrastructure.Slack.csproj" />
+    <ProjectReference Include="..\SqdcWatcher.Infrastructure\SqdcWatcher.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

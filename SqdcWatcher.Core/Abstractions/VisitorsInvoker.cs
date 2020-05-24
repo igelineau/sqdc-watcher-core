@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using XFactory.SqdcWatcher.Core.Visitors;
 
 namespace XFactory.SqdcWatcher.Core.Abstractions
 {

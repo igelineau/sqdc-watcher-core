@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using XFactory.SqdcWatcher.Core.MappingFilters;
 using XFactory.SqdcWatcher.Core.RestApiModels;
-using XFactory.SqdcWatcher.Data.Entities;
+using XFactory.SqdcWatcher.Data.Entities.Products;
 
 
 namespace XFactory.SqdcWatcher.Core.Mappers

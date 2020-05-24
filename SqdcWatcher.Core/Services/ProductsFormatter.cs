@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using Alba.CsConsoleFormat;
 using XFactory.SqdcWatcher.Data.Entities;
-
+using XFactory.SqdcWatcher.Data.Entities.Products;
 
 
 namespace XFactory.SqdcWatcher.Core.Services

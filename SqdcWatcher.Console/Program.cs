@@ -9,6 +9,7 @@ using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using SqdcWatcher.Slack.DependencyInjection;
 using XFactory.SqdcWatcher.Core;
+using XFactory.SqdcWatcher.Core.Abstractions;
 using XFactory.SqdcWatcher.Core.Configuration;
 using XFactory.SqdcWatcher.Core.Interfaces;
 using XFactory.SqdcWatcher.Core.Mappers;
@@ -16,7 +17,6 @@ using XFactory.SqdcWatcher.Core.MappingFilters;
 using XFactory.SqdcWatcher.Core.RestApiModels;
 using XFactory.SqdcWatcher.Core.Services;
 using XFactory.SqdcWatcher.Core.SiteCrawling;
-using XFactory.SqdcWatcher.Core.Visitors;
 using XFactory.SqdcWatcher.DataAccess;
 using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
@@ -61,8 +61,7 @@ namespace XFactory.SqdcWatcher.ConsoleApp
 
             services.AddFactory<IScanOperation, ScanOperation>();
             services.AddScoped<ISqdcWatcher, SqdcHttpWatcher>();
-
-            services.AddTransient<VariantStockStatusUpdater>();
+            
             services.AddTransient<SqdcRestApiClient>();
             
             services.AddTransient<SqdcProductsFetcher>();

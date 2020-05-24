@@ -46,7 +46,7 @@ namespace XFactory.SqdcWatcher.Core.Services
         {
             SetStartedState();
             
-            return Task.Run(() => TryLoop(cancellationToken), CancellationToken.None)
+            return Task.Run(async () => await TryLoop(cancellationToken), CancellationToken.None)
                 .ContinueWith(t => StopWorker(), CancellationToken.None);
         }
 

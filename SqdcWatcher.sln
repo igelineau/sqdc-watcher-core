@@ -1,20 +1,30 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.DataAccess", "SqdcWatcher.DataAccess\SqdcWatcher.DataAccess.csproj", "{7BA25D49-E6F3-4B96-B370-DB0C16F34C43}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.Infrastructure.DataAccess", "SqdcWatcher.Infrastructure.DataAccess\SqdcWatcher.Infrastructure.DataAccess.csproj", "{7BA25D49-E6F3-4B96-B370-DB0C16F34C43}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.Data.Entities", "SqdcWatcher.Data.Entities\SqdcWatcher.Data.Entities.csproj", "{F7ABDBB4-1D7E-4819-A2ED-9C74D7A437FA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.Domain", "SqdcWatcher.Domain\SqdcWatcher.Domain.csproj", "{F7ABDBB4-1D7E-4819-A2ED-9C74D7A437FA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.ConsoleApp", "SqdcWatcher.Console\SqdcWatcher.ConsoleApp.csproj", "{FF0E3D21-FD19-4A86-924F-AE85DD3503AE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.Core", "SqdcWatcher.Core\SqdcWatcher.Core.csproj", "{7BC31864-936E-499C-AF94-94EDA9A3E916}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.Slack", "SqdcWatcher.Slack\SqdcWatcher.Slack.csproj", "{007EEE51-C7BF-4047-9B9E-DB7B8C41175C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.Infrastructure.Slack", "SqdcWatcher.Infrastructure.Slack\SqdcWatcher.Infrastructure.Slack.csproj", "{007EEE51-C7BF-4047-9B9E-DB7B8C41175C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9C4DA52D-467D-4A0D-8E74-3FDFBD25BE31}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.Core.Tests", "SqdcWatcher.Core.Tests\SqdcWatcher.Core.Tests.csproj", "{E949E016-228F-449F-86A8-223A76BDEC79}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.ConsolePlayground", "SqdcWatcher.ConsolePlayground\SqdcWatcher.ConsolePlayground.csproj", "{C6EF92EC-C533-452C-91BF-34AC832A5A5A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.Infrastructure", "SqdcWatcher.Infrastructure\SqdcWatcher.Infrastructure.csproj", "{17407615-3807-4C8B-B4F3-BC03A92F6448}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{FB6696A3-B523-408B-91DB-2FF10B32BD8A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain", "Domain", "{02B72798-46A3-4853-8A62-03DCA0FA89B0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Service", "Service", "{62E3B0AF-A4EF-42AF-87F1-141CA0000DAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqdcWatcher.Domain.Tests", "SqdcWatcher.Domain.Tests\SqdcWatcher.Domain.Tests.csproj", "{3F109332-129D-40C3-B4BF-113AEF783C55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,8 +60,22 @@ Global
 		{C6EF92EC-C533-452C-91BF-34AC832A5A5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6EF92EC-C533-452C-91BF-34AC832A5A5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6EF92EC-C533-452C-91BF-34AC832A5A5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{17407615-3807-4C8B-B4F3-BC03A92F6448}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{17407615-3807-4C8B-B4F3-BC03A92F6448}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{17407615-3807-4C8B-B4F3-BC03A92F6448}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{17407615-3807-4C8B-B4F3-BC03A92F6448}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F109332-129D-40C3-B4BF-113AEF783C55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F109332-129D-40C3-B4BF-113AEF783C55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F109332-129D-40C3-B4BF-113AEF783C55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F109332-129D-40C3-B4BF-113AEF783C55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{E949E016-228F-449F-86A8-223A76BDEC79} = {9C4DA52D-467D-4A0D-8E74-3FDFBD25BE31}
+		{17407615-3807-4C8B-B4F3-BC03A92F6448} = {FB6696A3-B523-408B-91DB-2FF10B32BD8A}
+		{007EEE51-C7BF-4047-9B9E-DB7B8C41175C} = {FB6696A3-B523-408B-91DB-2FF10B32BD8A}
+		{F7ABDBB4-1D7E-4819-A2ED-9C74D7A437FA} = {02B72798-46A3-4853-8A62-03DCA0FA89B0}
+		{7BA25D49-E6F3-4B96-B370-DB0C16F34C43} = {FB6696A3-B523-408B-91DB-2FF10B32BD8A}
+		{7BC31864-936E-499C-AF94-94EDA9A3E916} = {62E3B0AF-A4EF-42AF-87F1-141CA0000DAE}
+		{3F109332-129D-40C3-B4BF-113AEF783C55} = {02B72798-46A3-4853-8A62-03DCA0FA89B0}
 	EndGlobalSection
 EndGlobal

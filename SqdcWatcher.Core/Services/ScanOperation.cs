@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
-using SqdcWatcher.Slack;
+using SqdcWatcher.Infrastructure;
 using XFactory.SqdcWatcher.Core.Abstractions;
 using XFactory.SqdcWatcher.Core.Dto;
 using XFactory.SqdcWatcher.Core.Interfaces;
@@ -16,8 +17,8 @@ using XFactory.SqdcWatcher.Core.Mappers;
 using XFactory.SqdcWatcher.Core.RestApiModels;
 using XFactory.SqdcWatcher.Core.SiteCrawling;
 using XFactory.SqdcWatcher.Core.Utils;
-using XFactory.SqdcWatcher.Core.Visitors;
 using XFactory.SqdcWatcher.Data.Entities;
+using XFactory.SqdcWatcher.Data.Entities.Products;
 using XFactory.SqdcWatcher.DataAccess;
 
 namespace XFactory.SqdcWatcher.Core.Services
@@ -40,7 +41,6 @@ namespace XFactory.SqdcWatcher.Core.Services
 
         private readonly IRemoteStore<ProductDto> sqdcProductsFetcher;
         private readonly VariantPricesMapper variantPricesMapper;
-        private readonly VariantStockStatusUpdater variantStockStatusUpdater;
         private AppState appState;
         private SqdcDbContext dbContext;
 
@@ -51,7 +51,6 @@ namespace XFactory.SqdcWatcher.Core.Services
             SqdcRestApiClient restClient,
             ProductMapper productMapper,
             VariantPricesMapper variantPricesMapper,
-            VariantStockStatusUpdater variantStockStatusUpdater,
             Func<SqdcDbContext> dbContextFactory,
             ILogger<ScanOperation> logger,
             ISlackClient slackPostClient,
@@ -62,7 +61,6 @@ namespace XFactory.SqdcWatcher.Core.Services
             this.restClient = restClient;
             this.productMapper = productMapper;
             this.variantPricesMapper = variantPricesMapper;
-            this.variantStockStatusUpdater = variantStockStatusUpdater;
             this.dbContextFactory = dbContextFactory;
             this.logger = logger;
             this.slackPostClient = slackPostClient;
@@ -82,11 +80,11 @@ namespace XFactory.SqdcWatcher.Core.Services
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
 
-            DisplayProductsStatistics();
+            LogProductsStatistics();
             await SendSlackNotification();
         }
 
-        private void DisplayProductsStatistics()
+        private void LogProductsStatistics()
         {
             logger.LogInformation($"{localProducts.Count} total products ({newProducts.Count} new)");
         }
@@ -153,7 +151,6 @@ namespace XFactory.SqdcWatcher.Core.Services
             {
                 logger.LogInformation("No change to persist to database.");
             }
-            
         }
 
         private async Task ExecuteInternal(CancellationToken cancellationToken)
@@ -171,11 +168,10 @@ namespace XFactory.SqdcWatcher.Core.Services
 
         private async Task LoadLocalProductsList(CancellationToken cancellationToken)
         {
-            await foreach (Product product in dbContext.Products
+            IIncludableQueryable<Product, List<SpecificationAttribute>> query = dbContext.Products
                 .AsTracking()
-                .Include(p => p.Variants).ThenInclude(v => v.Specifications)
-                .AsAsyncEnumerable()
-                .WithCancellation(cancellationToken))
+                .Include(p => p.Variants).ThenInclude(v => v.Specifications);
+            await foreach (Product product in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 localProducts.Add(product.Id, product);
             }
@@ -230,7 +226,7 @@ namespace XFactory.SqdcWatcher.Core.Services
                 if (isNew)
                 {
                     dbContext.ProductVariants.Add(dbVariant);
-                    product.Variants.Add(dbVariant);
+                    product.AddVariant(dbVariant);
                 }
             }
         }
@@ -263,10 +259,12 @@ namespace XFactory.SqdcWatcher.Core.Services
             HashSet<long> variantsIdsInStock = (await restClient.GetInventoryItems(allVariants.Select(v => v.Id), cancelToken)).ToHashSet();
             foreach (ProductVariant variant in allVariants)
             {
-                StockStatusChangeResult result = variantStockStatusUpdater.SetStockStatus(variant, variantsIdsInStock.Contains(variant.Id));
+                StockStatusChangeResult result = variant.SetStockStatus(variantsIdsInStock.Contains(variant.Id));
                 if (result != StockStatusChangeResult.NotChanged)
                 {
-                    string eventName = result == StockStatusChangeResult.BecameInStock ? StockEventNames.InStock : StockEventNames.OutOfStock;
+                    string eventName = result == StockStatusChangeResult.BecameInStock
+                        ? StockEventNames.InStock 
+                        : StockEventNames.OutOfStock;
                     var stockHistoryEntry = new StockHistory
                     {
                         ProductVariantId = variant.Id,
