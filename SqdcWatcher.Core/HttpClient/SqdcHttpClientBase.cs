@@ -1,12 +1,9 @@
-
-
 using System;
 using RestSharp;
 using rs = RestSharp;
 
 
-
-namespace XFactory.SqdcWatcher.Core.Services
+namespace XFactory.SqdcWatcher.Core.HttpClient
 {
     public abstract class SqdcHttpClientBase
     {

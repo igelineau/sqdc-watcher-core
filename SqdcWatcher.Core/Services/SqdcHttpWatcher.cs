@@ -20,12 +20,14 @@ namespace XFactory.SqdcWatcher.Core.Services
 
     public class SqdcHttpWatcher : ISqdcWatcher
     {
+        private readonly IHostApplicationLifetime applicationLifetime;
         private readonly ILogger<SqdcHttpWatcher> logger;
         private readonly TimeSpan loopInterval = TimeSpan.FromMinutes(6);
-        private readonly Func<IScanOperation> scanOperationFactory;
-        private readonly IHostApplicationLifetime applicationLifetime;
+
         private readonly ManualResetEventSlim resumeLoopEvent;
-        
+        private readonly Mutex runningMutex;
+        private readonly Func<IScanOperation> scanOperationFactory;
+
         private volatile bool isFullRefreshRequested;
         private Stopwatch loopStopwatch;
 
@@ -38,6 +40,7 @@ namespace XFactory.SqdcWatcher.Core.Services
             this.scanOperationFactory = scanOperationFactory;
             this.applicationLifetime = applicationLifetime;
             resumeLoopEvent = new ManualResetEventSlim(true);
+            runningMutex = new Mutex(false);
         }
 
         public WatcherState State { get; private set; }
@@ -45,17 +48,20 @@ namespace XFactory.SqdcWatcher.Core.Services
         public Task Start(CancellationToken cancellationToken)
         {
             SetStartedState();
-            
+
             return Task.Run(async () => await TryLoop(cancellationToken), CancellationToken.None)
                 .ContinueWith(t => StopWorker(), CancellationToken.None);
         }
 
+        public void RequestRefresh(bool forceFullRefresh = false)
+        {
+            isFullRefreshRequested = forceFullRefresh;
+            resumeLoopEvent.Set();
+        }
+
         private void SetStartedState()
         {
-            if (State == WatcherState.Running)
-            {
-                throw new WatcherStartException("cannot start watcher, it is already running.");
-            }
+            if (!runningMutex.WaitOne(TimeSpan.Zero)) throw new WatcherStartException("cannot start watcher, it is already running.");
 
             State = WatcherState.Running;
         }
@@ -87,30 +93,9 @@ namespace XFactory.SqdcWatcher.Core.Services
             }
         }
 
-        private void LogLoopIterationCompleted()
-        {
-            DateTime nextExecutionTime = DateTime.Now + loopInterval;
-            logger.LogInformation(
-                $"Scan completed in {loopStopwatch.Elapsed.ToSmartFormat()}. Next execution: {nextExecutionTime:H\\hmm}");
-        }
-
         private void PrepareLoopIteration()
         {
             loopStopwatch = Stopwatch.StartNew();
-        }
-
-        private void StopWorker()
-        {
-            State = WatcherState.Stopped;
-            logger.LogInformation("SqdcWatcher stopped");
-        }
-
-        private void HandleLoopException(Exception exception)
-        {
-            logger.LogError(exception, exception.Message);
-
-            logger.LogInformation("Stopping the application because of an error");
-            applicationLifetime.StopApplication();
         }
 
         private async Task TryExecuteScan(CancellationToken cancellationToken)
@@ -127,17 +112,33 @@ namespace XFactory.SqdcWatcher.Core.Services
             }
         }
 
+        private void LogLoopIterationCompleted()
+        {
+            DateTime nextExecutionTime = DateTime.Now + loopInterval;
+            logger.LogInformation(
+                $"Scan completed in {loopStopwatch.Elapsed.ToSmartFormat()}. Next execution: {nextExecutionTime:H\\hmm}");
+        }
+
+        private void StopWorker()
+        {
+            State = WatcherState.Stopped;
+            runningMutex.ReleaseMutex();
+            logger.LogInformation("SqdcWatcher stopped");
+        }
+
+        private void HandleLoopException(Exception exception)
+        {
+            logger.LogError(exception, exception.Message);
+
+            logger.LogInformation("Stopping the application because of an error");
+            applicationLifetime.StopApplication();
+        }
+
         private async Task ExecuteScan(CancellationToken cancelToken)
         {
             logger.LogInformation("--- Watcher - Refresh products started ---");
             IScanOperation scanOperation = scanOperationFactory.Invoke();
             await scanOperation.Execute(isFullRefreshRequested, cancelToken);
-        }
-
-        public void RequestRefresh(bool forceFullRefresh = false)
-        {
-            isFullRefreshRequested = forceFullRefresh;
-            resumeLoopEvent.Set();
         }
 
         private void BlockFor(TimeSpan timeToBlock, CancellationToken cancelToken)

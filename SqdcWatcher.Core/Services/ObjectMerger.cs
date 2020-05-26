@@ -1,5 +1,3 @@
-
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,23 +5,16 @@ using System.Linq.Expressions;
 using System.Reflection;
 using JetBrains.Annotations;
 
-
-
 namespace XFactory.SqdcWatcher.Core.Services
 {
     public static class ObjectMerger
     {
         private static PropertyInfo UnwrapPropertyExpression(LambdaExpression expression)
         {
-            if (expression.Body is UnaryExpression unaryExpression)
-            {
-                return (PropertyInfo) ((MemberExpression) unaryExpression.Operand).Member;
-            }
+            if (expression.Body is UnaryExpression unaryExpression) return (PropertyInfo) ((MemberExpression) unaryExpression.Operand).Member;
 
             if (!(expression.Body is MemberExpression memberExpression))
-            {
                 throw new InvalidOperationException("The reduced expression must be a member expression.");
-            }
 
             return (PropertyInfo) memberExpression.Member;
         }
@@ -46,10 +37,7 @@ namespace XFactory.SqdcWatcher.Core.Services
                 TTarget targetItem = destination.FirstOrDefault(tItem =>
                 {
                     object targetId = targetIdProp.GetValue(tItem);
-                    if (ReferenceEquals(sourceId, targetId))
-                    {
-                        return true;
-                    }
+                    if (ReferenceEquals(sourceId, targetId)) return true;
 
                     return sourceId?.Equals(targetId) ?? false;
                 });
@@ -76,12 +64,8 @@ namespace XFactory.SqdcWatcher.Core.Services
                 .Where(p => (!p.PropertyType.IsClass || p.PropertyType == typeof(string)) && p.GetSetMethod() != null)
                 .ToDictionary(p => p.Name);
             foreach (PropertyInfo sourceProp in sourceProperties)
-            {
                 if (targetWriteableProperties.TryGetValue(sourceProp.Name, out PropertyInfo targetProp))
-                {
                     targetProp.SetValue(target, sourceProp.GetValue(sourceObject));
-                }
-            }
 
             return target;
         }

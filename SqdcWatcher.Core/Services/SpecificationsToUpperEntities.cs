@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using XFactory.SqdcWatcher.Data.Entities;
+using XFactory.SqdcWatcher.Data.Entities.ProductVariant;
 
-namespace XFactory.SqdcWatcher.Core
+namespace XFactory.SqdcWatcher.Core.Services
 {
-    public static class SpecificationCopier
+    public static class SpecificationToUpperEntities
     {
         /// <summary>
         /// </summary>
@@ -23,13 +23,11 @@ namespace XFactory.SqdcWatcher.Core
                 .Where(p => p.GetSetMethod() != null)
                 .ToDictionary(p => p.Name);
             foreach (SpecificationAttribute spec in specifications)
-            {
                 if (properties.TryGetValue(spec.PropertyName, out PropertyInfo propInfo))
                 {
                     propInfo.SetValue(targetInstance, Convert.ChangeType(spec.Value, propInfo.PropertyType));
                     copiedPropertyNames.Add(spec.PropertyName);
                 }
-            }
 
             return copiedPropertyNames;
         }

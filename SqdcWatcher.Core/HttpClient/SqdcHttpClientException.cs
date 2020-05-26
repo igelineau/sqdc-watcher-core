@@ -1,11 +1,7 @@
-
-
 using System;
 using System.Runtime.Serialization;
 
-
-
-namespace XFactory.SqdcWatcher.Core.Services
+namespace XFactory.SqdcWatcher.Core.HttpClient
 {
     [Serializable]
     public class SqdcHttpClientException : Exception

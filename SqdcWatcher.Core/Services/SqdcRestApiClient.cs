@@ -1,5 +1,3 @@
-
-
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -8,9 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using RestSharp;
-using XFactory.SqdcWatcher.Core.RestApiModels;
-
-
+using SqdcWatcher.DataTransferObjects.RestApiModels;
+using XFactory.SqdcWatcher.Core.HttpClient;
 
 namespace XFactory.SqdcWatcher.Core.Services
 {
@@ -56,10 +53,7 @@ namespace XFactory.SqdcWatcher.Core.Services
 
             logger.Log(LogLevel.Information, $"POST {sw.ElapsedMilliseconds}ms {resource}");
             LogRequest(request, response, sw.ElapsedMilliseconds);
-            if (response.IsSuccessful)
-            {
-                return response.Data;
-            }
+            if (response.IsSuccessful) return response.Data;
 
             throw new SqdcHttpClientException((response.Data as BaseResponse)?.Message ?? response.ErrorMessage, response.ErrorException);
         }
