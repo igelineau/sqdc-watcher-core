@@ -11,7 +11,7 @@ namespace SqdcWatcher.ConsolePlayground
                 ConsoleKeyInfo keyInfo = Console.ReadKey();
                 Console.WriteLine();
                 Console.WriteLine(
-                    $"Key {keyInfo.Key}, KeyChar {(int)keyInfo.KeyChar}, modifiers = {keyInfo.Modifiers}");
+                    $"Key {keyInfo.Key}, KeyChar {(int) keyInfo.KeyChar}, modifiers = {keyInfo.Modifiers}");
             }
         }
     }

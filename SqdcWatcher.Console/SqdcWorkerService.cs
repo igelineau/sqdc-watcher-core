@@ -11,10 +11,10 @@ namespace XFactory.SqdcWatcher.ConsoleApp
 {
     public class SqdcWorkerService : BackgroundService
     {
-        private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ILogger<SqdcWorkerService> logger;
-        private ISqdcWatcher sqdcWatcher;
+        private readonly IServiceScopeFactory serviceScopeFactory;
         private ConsoleInputInterface consoleInputInterface;
+        private ISqdcWatcher sqdcWatcher;
 
         public SqdcWorkerService(IServiceScopeFactory serviceScopeFactory, ILogger<SqdcWorkerService> logger)
         {

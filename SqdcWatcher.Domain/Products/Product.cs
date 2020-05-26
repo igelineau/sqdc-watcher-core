@@ -1,21 +1,34 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using JetBrains.Annotations;
 
 namespace XFactory.SqdcWatcher.Data.Entities.Products
 {
+    [PublicAPI]
     [DebuggerDisplay("{Title} from {ProducerName} ({LevelTwoCategory})")]
     public sealed class Product
     {
-        private readonly List<ProductVariant> variants;
-        public ProductId Id { get; }
+        private readonly List<ProductVariant.ProductVariant> variants;
+
+        private Product()
+        {
+            variants = new List<ProductVariant.ProductVariant>();
+        }
+
+        public Product(string id) : this()
+        {
+            Id = id;
+            IsNew = true;
+        }
+
+        public string Id { get; }
 
         public string Title { get; set; }
 
         public string Url { get; set; }
 
-        public IEnumerable<ProductVariant> Variants => variants;
+        public IEnumerable<ProductVariant.ProductVariant> Variants => variants;
 
         public string ProducerName { get; set; }
 
@@ -31,22 +44,11 @@ namespace XFactory.SqdcWatcher.Data.Entities.Products
         public string Brand { get; set; }
         public bool IsNew { get; set; }
 
-        private Product()
-        {
-            variants = new List<ProductVariant>();
-        }
-
-        public Product(string id) : this()
-        {
-            Id = ProductId.Create(id);
-            IsNew = true;
-        }
-
-        public IEnumerable<ProductVariant> GetAvailableVariants() => Variants.Where(v => v.InStock);
+        public IEnumerable<ProductVariant.ProductVariant> GetAvailableVariants() => Variants.Where(v => v.InStock);
 
         public bool IsInStock() => Variants.Any(v => v.InStock);
 
-        public void AddVariant(ProductVariant productVariant)
+        public void AddVariant(ProductVariant.ProductVariant productVariant)
         {
             variants.Add(productVariant);
         }

@@ -9,7 +9,8 @@ using AngleSharp;
 using AngleSharp.Dom;
 using Microsoft.Extensions.Logging;
 using RestSharp;
-using XFactory.SqdcWatcher.Core.RestApiModels;
+using SqdcWatcher.DataTransferObjects.RestApiModels;
+using XFactory.SqdcWatcher.Core.HttpClient;
 using XFactory.SqdcWatcher.Core.Services;
 
 namespace XFactory.SqdcWatcher.Core.SiteCrawling
@@ -24,7 +25,7 @@ namespace XFactory.SqdcWatcher.Core.SiteCrawling
             Client.AddDefaultHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 
             this.logger = logger;
-            
+
             IConfiguration htmlParserConfig = AngleSharp.Configuration.Default;
             htmlContext = BrowsingContext.New(htmlParserConfig);
         }
@@ -40,22 +41,16 @@ namespace XFactory.SqdcWatcher.Core.SiteCrawling
             {
                 ProductPageResult pageResult = await GetProductSummariesPage(currentPage, cancellationToken);
                 foreach (ProductDto productDto in pageResult.Products)
-                {
                     if (!completeList.ContainsKey(productDto.Id))
                     {
                         completeList.Add(productDto.Id, productDto);
                         yield return productDto;
                     }
-                }
 
                 if (pageResult.Products.Any())
-                {
                     currentPage++;
-                }
                 else
-                {
                     hasReachedEnd = true;
-                }
             } while (!hasReachedEnd);
 
             logger.LogInformation($"{completeList.Count} products discovered from the SQDC website in {Math.Round(sw.Elapsed.TotalSeconds)}s");
@@ -105,10 +100,7 @@ namespace XFactory.SqdcWatcher.Core.SiteCrawling
 
         private static void EnsureResponseSuccess(IRestResponse response, string exceptionMessage)
         {
-            if (!response.IsSuccessful)
-            {
-                throw new SqdcHttpClientException(exceptionMessage, response.ErrorException);
-            }
+            if (!response.IsSuccessful) throw new SqdcHttpClientException(exceptionMessage, response.ErrorException);
         }
     }
 }

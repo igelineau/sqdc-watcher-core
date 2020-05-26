@@ -1,12 +1,11 @@
 using System;
 using JetBrains.Annotations;
-using XFactory.SqdcWatcher.Core.Dto;
-using XFactory.SqdcWatcher.Core.RestApiModels;
+using SqdcWatcher.DataTransferObjects.DomainDto;
+using SqdcWatcher.DataTransferObjects.RestApiModels;
 using XFactory.SqdcWatcher.Core.Utils;
-using XFactory.SqdcWatcher.Data.Entities;
+using XFactory.SqdcWatcher.Data.Entities.History;
+using XFactory.SqdcWatcher.Data.Entities.ProductVariant;
 using XFactory.SqdcWatcher.DataAccess;
-
-
 
 namespace XFactory.SqdcWatcher.Core.MappingFilters
 {
@@ -28,16 +27,12 @@ namespace XFactory.SqdcWatcher.Core.MappingFilters
             if (destination.DisplayPrice > 0 &&
                 parsedSourcePrices.DisplayPrice.HasValue &&
                 !parsedSourcePrices.DisplayPrice.Value.Equals(destination.DisplayPrice, 2))
-            {
                 newDisplayPrice = parsedSourcePrices.DisplayPrice;
-            }
 
             if (destination.ListPrice > 0 &&
                 parsedSourcePrices.ListPrice.HasValue &&
                 !parsedSourcePrices.ListPrice.Value.Equals(destination.ListPrice, 2))
-            {
                 newListPrice = parsedSourcePrices.ListPrice;
-            }
 
             if (newDisplayPrice != null || newListPrice != null)
             {

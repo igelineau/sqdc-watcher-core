@@ -7,14 +7,14 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
-using XFactory.SqdcWatcher.Core.RestApiModels;
+using SqdcWatcher.DataTransferObjects.RestApiModels;
 
 namespace XFactory.SqdcWatcher.Core.SiteCrawling
 {
     public class SqdcProductsFileCacheProxy : DefaultCachingProxy<ProductDto, SqdcProductsFetcher>
     {
         private readonly string productsCacheFile;
-        
+
         public SqdcProductsFileCacheProxy(IHostEnvironment hostEnvironment, SqdcProductsFetcher innerService) : base(innerService, product => product.Id)
         {
             productsCacheFile = Path.Combine(
@@ -28,30 +28,20 @@ namespace XFactory.SqdcWatcher.Core.SiteCrawling
             bool isCachedDataAvailable = IsCachedDataAvailable();
             bool persistedCacheExists = PersistedCacheExists();
             bool loadingFromPersistentCache = !isCachedDataAvailable && persistedCacheExists;
-            
+
             IAsyncEnumerable<ProductDto> productsEnumerable;
             if (loadingFromPersistentCache)
-            {
                 productsEnumerable = (await LoadFromPersistedCache(cancellationToken)).ToAsyncEnumerable();
-            }
             else
-            {
                 productsEnumerable = base.GetAllItemsAsync(cancellationToken);
-            }
 
             var productsToPersist = new List<ProductDto>();
             await foreach (ProductDto productDto in productsEnumerable.WithCancellation(cancellationToken))
             {
-                if (!persistedCacheExists)
-                {
-                    productsToPersist.Add(productDto);
-                }
+                if (!persistedCacheExists) productsToPersist.Add(productDto);
 
-                if (loadingFromPersistentCache)
-                {
-                    ItemsCache.Add(productDto.Id, productDto);
-                }
-                
+                if (loadingFromPersistentCache) ItemsCache.Add(productDto.Id, productDto);
+
                 yield return productDto;
             }
 

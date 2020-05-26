@@ -6,8 +6,6 @@ namespace XFactory.SqdcWatcher.Data.Entities.Products
     [Serializable]
     public class InvalidProductIdException : Exception
     {
-        public string Id { get; }
-        
         public InvalidProductIdException(string message) : base(message)
         {
         }
@@ -26,5 +24,7 @@ namespace XFactory.SqdcWatcher.Data.Entities.Products
             StreamingContext context) : base(info, context)
         {
         }
+
+        public string Id { get; }
     }
 }

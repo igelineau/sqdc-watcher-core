@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using XFactory.SqdcWatcher.Data.Entities;
+using XFactory.SqdcWatcher.Data.Entities.Common;
+using XFactory.SqdcWatcher.Data.Entities.History;
 using XFactory.SqdcWatcher.Data.Entities.Products;
 
 namespace XFactory.SqdcWatcher.DataAccess

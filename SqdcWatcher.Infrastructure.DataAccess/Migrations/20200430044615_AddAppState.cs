@@ -15,10 +15,7 @@ namespace XFactory.SqdcWatcher.DataAccess.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     LastProductsListRefresh = table.Column<DateTime>(nullable: true)
                 },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AppState", x => x.Id);
-                });
+                constraints: table => { table.PrimaryKey("PK_AppState", x => x.Id); });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

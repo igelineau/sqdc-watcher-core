@@ -68,6 +68,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SqdcWatcher.Core\SqdcWatcher.Core.csproj" />
+    <ProjectReference Include="..\SqdcWatcher.DataTransferObjects\SqdcWatcher.DataTransferObjects.csproj" />
     <ProjectReference Include="..\SqdcWatcher.Domain\SqdcWatcher.Domain.csproj" />
     <ProjectReference Include="..\SqdcWatcher.Infrastructure.DataAccess\SqdcWatcher.Infrastructure.DataAccess.csproj" />
     <ProjectReference Include="..\SqdcWatcher.Infrastructure.Slack\SqdcWatcher.Infrastructure.Slack.csproj" />

@@ -14,6 +14,7 @@ namespace XFactory.SqdcWatcher.ConsoleApp
         private readonly ISqdcWatcher watcher;
 
         private Dictionary<ConsoleKeyInfo, Action> keyBindingsMap;
+
         public ConsoleInputInterface(ISqdcWatcher watcher, ILogger<ConsoleInputInterface> logger)
         {
             this.watcher = watcher;
@@ -34,10 +35,7 @@ namespace XFactory.SqdcWatcher.ConsoleApp
             while (!cancellationToken.IsCancellationRequested)
             {
                 ConsoleKeyInfo? key = await TryReadKeyAfter(100, cancellationToken);
-                if (key != null)
-                {
-                    InvokeActionIfBound(key.Value);
-                }
+                if (key != null) InvokeActionIfBound(key.Value);
             }
         }
 
@@ -49,10 +47,7 @@ namespace XFactory.SqdcWatcher.ConsoleApp
 
         private void InvokeActionIfBound(in ConsoleKeyInfo key)
         {
-            if (keyBindingsMap.TryGetValue(key, out Action action))
-            {
-                action.Invoke();
-            }
+            if (keyBindingsMap.TryGetValue(key, out Action action)) action.Invoke();
         }
     }
 }

@@ -12,9 +12,9 @@ namespace SqdcWatcher.Core.Tests.Services
 {
     public class SqdcHttpWatcherTest
     {
+        private Mock<IHostApplicationLifetime> applicationLifetimeMock;
         private ILogger<SqdcHttpWatcher> logger;
         private Mock<Func<IScanOperation>> scanOperationFactoryMock;
-        private Mock<IHostApplicationLifetime> applicationLifetimeMock;
         private SqdcHttpWatcher watcher;
 
         [SetUp]
@@ -23,7 +23,7 @@ namespace SqdcWatcher.Core.Tests.Services
             logger = new Mock<ILogger<SqdcHttpWatcher>>(MockBehavior.Loose).Object;
             scanOperationFactoryMock = new Mock<Func<IScanOperation>>();
             applicationLifetimeMock = new Mock<IHostApplicationLifetime>();
-            
+
             watcher = new SqdcHttpWatcher(
                 logger,
                 scanOperationFactoryMock.Object,
@@ -48,10 +48,10 @@ namespace SqdcWatcher.Core.Tests.Services
         {
             var cts = new CancellationTokenSource();
             Task watcherTask = watcher.Start(cts.Token);
-            
+
             cts.Cancel();
             Task.WaitAny(new[] {watcherTask}, 50);
-            
+
             Assert.AreEqual(watcher.State, WatcherState.Stopped);
         }
     }

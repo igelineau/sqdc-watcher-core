@@ -1,13 +1,12 @@
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
+using XFactory.SqdcWatcher.Data.Entities.Common;
 
 namespace XFactory.SqdcWatcher.Data.Entities.Products
 {
     [PublicAPI]
     public class ProductId : ValueObject<ProductId>
     {
-        public string Id { get; private set; }
-
         private ProductId()
         {
         }
@@ -18,19 +17,15 @@ namespace XFactory.SqdcWatcher.Data.Entities.Products
             Id = id;
         }
 
+        public string Id { get; private set; }
+
         private static void Validate(string id)
         {
-            if (id == null)
-            {
-                throw new InvalidProductIdException("Id cannot be null");
-            }
-            
-            if (!Regex.IsMatch(id, "^\\d+-P$"))
-            {
-                throw new InvalidProductIdException(id);
-            }
+            if (id == null) throw new InvalidProductIdException("Id cannot be null");
+
+            if (!Regex.IsMatch(id, "^\\d+-P$")) throw new InvalidProductIdException(id);
         }
-        
+
         public static ProductId Create(string id)
         {
             return new ProductId(id);
@@ -45,10 +40,18 @@ namespace XFactory.SqdcWatcher.Data.Entities.Products
         {
             return Id.GetHashCode();
         }
-        
+
         public static implicit operator string(ProductId productId)
         {
             return productId.Id;
+        }
+
+        public static implicit operator ProductId(string id)
+        {
+            return new ProductId
+            {
+                Id = id
+            };
         }
     }
 }

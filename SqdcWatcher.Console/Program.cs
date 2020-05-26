@@ -1,12 +1,14 @@
 ﻿using System;
 using System.IO;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
+using SqdcWatcher.DataTransferObjects.RestApiModels;
 using SqdcWatcher.Slack.DependencyInjection;
 using XFactory.SqdcWatcher.Core;
 using XFactory.SqdcWatcher.Core.Abstractions;
@@ -14,11 +16,9 @@ using XFactory.SqdcWatcher.Core.Configuration;
 using XFactory.SqdcWatcher.Core.Interfaces;
 using XFactory.SqdcWatcher.Core.Mappers;
 using XFactory.SqdcWatcher.Core.MappingFilters;
-using XFactory.SqdcWatcher.Core.RestApiModels;
 using XFactory.SqdcWatcher.Core.Services;
 using XFactory.SqdcWatcher.Core.SiteCrawling;
 using XFactory.SqdcWatcher.DataAccess;
-using IConfiguration = Microsoft.Extensions.Configuration.IConfiguration;
 
 namespace XFactory.SqdcWatcher.ConsoleApp
 {
@@ -32,12 +32,12 @@ namespace XFactory.SqdcWatcher.ConsoleApp
                 .Build()
                 .Run();
         }
-        
+
         private static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .UseSerilog(ConfigureSerilog)
                 .ConfigureServices(ConfigureServices);
-        
+
         private static void ConfigureServices(HostBuilderContext hostContext, IServiceCollection services)
         {
             services.AddHostedService<SqdcWorkerService>();
@@ -45,25 +45,25 @@ namespace XFactory.SqdcWatcher.ConsoleApp
 
             IConfiguration config = hostContext.Configuration;
             services.Configure<SqdcConfiguration>(config.GetSection("Sqdc"));
-            
+
             services.AddSlack(config);
-            
+
             services.ConfigureSqdcAutoMapper();
-            
+
             services.AddSqdcDbContext();
             services.AddTransient<ISqdcDataAccess, SqdcDataAccess>();
 
             services.AddGenericOpenTypeTransient(typeof(VisitorBase<>));
             services.AddGenericOpenTypeTransient(typeof(IMapper<,>));
             services.AddGenericOpenTypeTransient(typeof(IMappingFilter<,>));
-            
+
             services.AddScoped<BecameInStockTriggerPolicy>();
 
             services.AddFactory<IScanOperation, ScanOperation>();
             services.AddScoped<ISqdcWatcher, SqdcHttpWatcher>();
-            
+
             services.AddTransient<SqdcRestApiClient>();
-            
+
             services.AddTransient<SqdcProductsFetcher>();
             services.AddTransient<SqdcProductsFileCacheProxy>();
             services.AddTransient<IRemoteStore<ProductDto>>(ctx =>
@@ -80,7 +80,7 @@ namespace XFactory.SqdcWatcher.ConsoleApp
         private static void ConfigureSerilog(HostBuilderContext context, LoggerConfiguration configuration)
         {
             string logsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), ConfigDirName, "logs");
-            
+
             configuration.MinimumLevel.Debug()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 //.MinimumLevel.Override(DbLoggerCategory.Query.Name, LogEventLevel.Information)

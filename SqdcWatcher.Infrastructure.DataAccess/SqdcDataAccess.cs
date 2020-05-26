@@ -4,9 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using XFactory.SqdcWatcher.Data.Entities;
+using XFactory.SqdcWatcher.Data.Entities.Common;
+using XFactory.SqdcWatcher.Data.Entities.History;
 using XFactory.SqdcWatcher.Data.Entities.Products;
-
+using XFactory.SqdcWatcher.Data.Entities.ProductVariant;
 
 namespace XFactory.SqdcWatcher.DataAccess
 {
@@ -17,7 +18,7 @@ namespace XFactory.SqdcWatcher.DataAccess
         public SqdcDataAccess(Func<SqdcDbContext> dbContextFactory, ILogger<SqdcDataAccess> logger)
         {
             this.dbContextFactory = dbContextFactory;
-            
+
             using SqdcDbContext context = dbContextFactory();
             logger.LogInformation($"Using ConnectionString: {context.GetConnectionString()}");
         }
@@ -41,7 +42,7 @@ namespace XFactory.SqdcWatcher.DataAccess
         public async Task SaveProducts(List<Product> products)
         {
             await using SqdcDbContext dbContext = dbContextFactory();
-            HashSet<string> existingProductIds = dbContext.Products.Select(p => (string) p.Id).ToHashSet();
+            HashSet<string> existingProductIds = dbContext.Products.Select(p => p.Id).ToHashSet();
             HashSet<long> existingVariantIds = dbContext.ProductVariants.Select(pv => pv.Id).ToHashSet();
 
             List<ProductVariant> variants = products.SelectMany(p => p.Variants).ToList();
@@ -55,10 +56,7 @@ namespace XFactory.SqdcWatcher.DataAccess
             IEnumerable<SpecificationAttribute> attributesToDetach = dbContext.SpecificationAttribute.Local
                 .Where(sa => dbContext.Entry(sa).State == EntityState.Modified)
                 .ToList();
-            foreach (SpecificationAttribute spec in attributesToDetach)
-            {
-                dbContext.Entry(spec).State = EntityState.Detached;
-            }
+            foreach (SpecificationAttribute spec in attributesToDetach) dbContext.Entry(spec).State = EntityState.Detached;
 
             await dbContext.SaveChangesAsync();
         }

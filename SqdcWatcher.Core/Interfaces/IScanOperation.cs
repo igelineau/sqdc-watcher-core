@@ -1,9 +1,5 @@
-
-
 using System.Threading;
 using System.Threading.Tasks;
-
-
 
 namespace XFactory.SqdcWatcher.Core.Interfaces
 {

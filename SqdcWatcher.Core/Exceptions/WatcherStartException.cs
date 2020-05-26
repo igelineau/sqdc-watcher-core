@@ -1,9 +1,5 @@
-
-
 using System;
 using System.Runtime.Serialization;
-
-
 
 namespace XFactory.SqdcWatcher.Core.Exceptions
 {

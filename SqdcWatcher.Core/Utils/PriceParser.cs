@@ -1,9 +1,5 @@
-
-
-using XFactory.SqdcWatcher.Core.Dto;
-using XFactory.SqdcWatcher.Core.RestApiModels;
-
-
+using SqdcWatcher.DataTransferObjects.DomainDto;
+using SqdcWatcher.DataTransferObjects.RestApiModels;
 
 namespace XFactory.SqdcWatcher.Core.Utils
 {

@@ -3,6 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
         <RootNamespace>XFactory.SqdcWatcher.Data.Entities</RootNamespace>
+        <NoWarn>S3875</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>

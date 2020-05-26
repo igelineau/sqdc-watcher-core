@@ -1,9 +1,5 @@
-﻿
-
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-
-
 
 namespace XFactory.SqdcWatcher.DataAccess.Migrations
 {

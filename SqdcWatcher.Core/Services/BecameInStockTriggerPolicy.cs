@@ -1,8 +1,4 @@
-
-
-using XFactory.SqdcWatcher.Data.Entities;
-
-
+using XFactory.SqdcWatcher.Data.Entities.ProductVariant;
 
 namespace XFactory.SqdcWatcher.Core.Services
 {
