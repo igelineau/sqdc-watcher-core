@@ -60,8 +60,16 @@ namespace XFactory.SqdcWatcher.Data.Entities.Products
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj?.GetType() != GetType()) return false;
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj?.GetType() != GetType())
+            {
+                return false;
+            }
+
             return Equals((Product) obj);
         }
 

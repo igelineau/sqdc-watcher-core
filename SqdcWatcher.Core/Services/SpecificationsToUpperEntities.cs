@@ -23,11 +23,13 @@ namespace XFactory.SqdcWatcher.Core.Services
                 .Where(p => p.GetSetMethod() != null)
                 .ToDictionary(p => p.Name);
             foreach (SpecificationAttribute spec in specifications)
+            {
                 if (properties.TryGetValue(spec.PropertyName, out PropertyInfo propInfo))
                 {
                     propInfo.SetValue(targetInstance, Convert.ChangeType(spec.Value, propInfo.PropertyType));
                     copiedPropertyNames.Add(spec.PropertyName);
                 }
+            }
 
             return copiedPropertyNames;
         }

@@ -8,7 +8,10 @@ namespace XFactory.SqdcWatcher.Core.Abstractions
 
         public void VisitAll(IEnumerable<T> collection)
         {
-            foreach (T item in collection) Visit(item);
+            foreach (T item in collection)
+            {
+                Visit(item);
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -11,6 +12,7 @@ using XFactory.SqdcWatcher.Data.Entities.ProductVariant;
 
 namespace XFactory.SqdcWatcher.DataAccess
 {
+    [PublicAPI]
     public class SqdcDbContext : DbContext
     {
         private const string ConfigDirName = "sqdc-watcher";
@@ -47,18 +49,27 @@ namespace XFactory.SqdcWatcher.DataAccess
 
         public string GetConnectionString()
         {
-            if (connectionString != null) return connectionString;
+            if (connectionString != null)
+            {
+                return connectionString;
+            }
 
             string envName = hostingEnvironment.EnvironmentName;
             string envSuffix = "";
-            if (!hostingEnvironment.IsProduction()) envSuffix = "_" + envName;
+            if (!hostingEnvironment.IsProduction())
+            {
+                envSuffix = "_" + envName;
+            }
 
             string databasePath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 ConfigDirName,
                 $"store{envSuffix}.db");
 
-            if (!Directory.Exists(Path.GetDirectoryName(databasePath))) Directory.CreateDirectory(Path.GetDirectoryName(databasePath));
+            if (!Directory.Exists(Path.GetDirectoryName(databasePath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(databasePath));
+            }
 
             connectionString = $"Data Source={databasePath}";
             return connectionString;
@@ -67,7 +78,10 @@ namespace XFactory.SqdcWatcher.DataAccess
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             //This will make all table names singular
-            foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes()) entityType.SetTableName(entityType.DisplayName());
+            foreach (IMutableEntityType entityType in modelBuilder.Model.GetEntityTypes())
+            {
+                entityType.SetTableName(entityType.DisplayName());
+            }
 
             modelBuilder.Entity<Product>()
                 .Ignore(p => p.IsNew)

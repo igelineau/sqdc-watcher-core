@@ -37,7 +37,10 @@ namespace XFactory.SqdcWatcher.Core
         private static Type FindBaseType(Type derivedType, Type baseTypeToFind)
         {
             Type implementedInterface = FindImplementedInterface(derivedType, baseTypeToFind);
-            if (implementedInterface != null) return implementedInterface;
+            if (implementedInterface != null)
+            {
+                return implementedInterface;
+            }
 
             // concrete type
             Type currentBaseType = derivedType.BaseType;
@@ -45,7 +48,9 @@ namespace XFactory.SqdcWatcher.Core
             {
                 if (currentBaseType == baseTypeToFind ||
                     currentBaseType.IsGenericType && currentBaseType.GetGenericTypeDefinition() == baseTypeToFind)
+                {
                     return currentBaseType;
+                }
 
                 currentBaseType = currentBaseType.BaseType;
             }
@@ -55,7 +60,10 @@ namespace XFactory.SqdcWatcher.Core
 
         private static Type FindImplementedInterface(Type type, Type interfaceType)
         {
-            if (!interfaceType.IsInterface) return null;
+            if (!interfaceType.IsInterface)
+            {
+                return null;
+            }
 
             return type
                 .GetInterfaces()

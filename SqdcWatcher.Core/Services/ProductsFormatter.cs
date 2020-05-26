@@ -42,7 +42,10 @@ namespace XFactory.SqdcWatcher.Core.Services
         private static string FormatNewProductPrefix(Product p)
         {
             string result = "";
-            if (p.IsNew) result = p.IsInStock() ? "[NEW] " : "[UPCOMING] ";
+            if (p.IsNew)
+            {
+                result = p.IsInStock() ? "[NEW] " : "[UPCOMING] ";
+            }
 
             return result;
         }
@@ -67,9 +70,13 @@ namespace XFactory.SqdcWatcher.Core.Services
             string strain = LimitLength(product.Strain, StrainMaxWidth);
             string finalName;
             if (string.IsNullOrEmpty(strain) || strain.Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
                 finalName = name;
+            }
             else
+            {
                 finalName = strain.IndexOf(',') > -1 ? $"{name} ({strain})" : $"{strain} ({name})";
+            }
 
             return finalName;
         }
@@ -80,17 +87,30 @@ namespace XFactory.SqdcWatcher.Core.Services
             string producerName = product.ProducerName;
             string brand = product.Brand;
 
-            if (ShouldDisplayBrand(brand)) components.Add(brand);
+            if (ShouldDisplayBrand(brand))
+            {
+                components.Add(brand);
+            }
 
-            if (ShouldDisplaySupplier(producerName) && !producerName.Equals(brand, StringComparison.OrdinalIgnoreCase)) components.Add(producerName);
+            if (ShouldDisplaySupplier(producerName) && !producerName.Equals(brand, StringComparison.OrdinalIgnoreCase))
+            {
+                components.Add(producerName);
+            }
 
-            if (components.Count == 0) components.Add(brand);
+            if (components.Count == 0)
+            {
+                components.Add(brand);
+            }
 
             string displayString = components.First();
             if (components.Count > 1)
+            {
                 displayString += $" ({LimitLength(components.ElementAt(1), 12)})";
+            }
             else
+            {
                 displayString = LimitLength(displayString, 25);
+            }
 
             return displayString;
         }

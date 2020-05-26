@@ -21,9 +21,15 @@ namespace XFactory.SqdcWatcher.Data.Entities.Products
 
         private static void Validate(string id)
         {
-            if (id == null) throw new InvalidProductIdException("Id cannot be null");
+            if (id == null)
+            {
+                throw new InvalidProductIdException("Id cannot be null");
+            }
 
-            if (!Regex.IsMatch(id, "^\\d+-P$")) throw new InvalidProductIdException(id);
+            if (!Regex.IsMatch(id, "^\\d+-P$"))
+            {
+                throw new InvalidProductIdException(id);
+            }
         }
 
         public static ProductId Create(string id)

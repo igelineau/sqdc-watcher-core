@@ -31,16 +31,26 @@ namespace XFactory.SqdcWatcher.Core.SiteCrawling
 
             IAsyncEnumerable<ProductDto> productsEnumerable;
             if (loadingFromPersistentCache)
+            {
                 productsEnumerable = (await LoadFromPersistedCache(cancellationToken)).ToAsyncEnumerable();
+            }
             else
+            {
                 productsEnumerable = base.GetAllItemsAsync(cancellationToken);
+            }
 
             var productsToPersist = new List<ProductDto>();
             await foreach (ProductDto productDto in productsEnumerable.WithCancellation(cancellationToken))
             {
-                if (!persistedCacheExists) productsToPersist.Add(productDto);
+                if (!persistedCacheExists)
+                {
+                    productsToPersist.Add(productDto);
+                }
 
-                if (loadingFromPersistentCache) ItemsCache.Add(productDto.Id, productDto);
+                if (loadingFromPersistentCache)
+                {
+                    ItemsCache.Add(productDto.Id, productDto);
+                }
 
                 yield return productDto;
             }

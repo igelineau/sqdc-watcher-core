@@ -27,12 +27,16 @@ namespace XFactory.SqdcWatcher.Core.MappingFilters
             if (destination.DisplayPrice > 0 &&
                 parsedSourcePrices.DisplayPrice.HasValue &&
                 !parsedSourcePrices.DisplayPrice.Value.Equals(destination.DisplayPrice, 2))
+            {
                 newDisplayPrice = parsedSourcePrices.DisplayPrice;
+            }
 
             if (destination.ListPrice > 0 &&
                 parsedSourcePrices.ListPrice.HasValue &&
                 !parsedSourcePrices.ListPrice.Value.Equals(destination.ListPrice, 2))
+            {
                 newListPrice = parsedSourcePrices.ListPrice;
+            }
 
             if (newDisplayPrice != null || newListPrice != null)
             {

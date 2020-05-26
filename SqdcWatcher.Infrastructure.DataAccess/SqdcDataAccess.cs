@@ -56,7 +56,10 @@ namespace XFactory.SqdcWatcher.DataAccess
             IEnumerable<SpecificationAttribute> attributesToDetach = dbContext.SpecificationAttribute.Local
                 .Where(sa => dbContext.Entry(sa).State == EntityState.Modified)
                 .ToList();
-            foreach (SpecificationAttribute spec in attributesToDetach) dbContext.Entry(spec).State = EntityState.Detached;
+            foreach (SpecificationAttribute spec in attributesToDetach)
+            {
+                dbContext.Entry(spec).State = EntityState.Detached;
+            }
 
             await dbContext.SaveChangesAsync();
         }

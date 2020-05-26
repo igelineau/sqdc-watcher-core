@@ -17,7 +17,10 @@ namespace XFactory.SqdcWatcher.Core.Mappers
         {
             existingDest ??= CreateDestinationInstance(source);
 
-            foreach (IMappingFilter<TSource, TDest> filter in mappingFilters) filter.Apply(source, existingDest);
+            foreach (IMappingFilter<TSource, TDest> filter in mappingFilters)
+            {
+                filter.Apply(source, existingDest);
+            }
 
             return PerformMapping(source, existingDest);
         }

@@ -23,14 +23,20 @@ namespace XFactory.SqdcWatcher.Core.SiteCrawling
         public virtual async IAsyncEnumerable<TEntity> GetAllItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (IsCachedDataAvailable())
+            {
                 foreach (TEntity productDto in ItemsCache.Values)
+                {
                     yield return productDto;
+                }
+            }
             else
+            {
                 await foreach (TEntity item in innerService.GetAllItemsAsync(cancellationToken))
                 {
                     ItemsCache.Add(entityKeySelector.Invoke(item), item);
                     yield return item;
                 }
+            }
         }
 
         protected bool IsCachedDataAvailable() => ItemsCache.Any();

@@ -51,11 +51,11 @@ namespace XFactory.SqdcWatcher.Core.Services
         public ScanOperation(
             IRemoteStore<ProductDto> sqdcProductsFetcher,
             SqdcRestApiClient restClient,
-            ProductMapper productMapper,
             VariantPricesMapper variantPricesMapper,
             Func<SqdcDbContext> dbContextFactory,
             ILogger<ScanOperation> logger,
             ISlackClient slackPostClient,
+            ProductMapper productMapper,
             SpecificationsMapper specificationsMapper,
             IEnumerable<VisitorBase<Product>> productVisitors)
         {
@@ -109,31 +109,45 @@ namespace XFactory.SqdcWatcher.Core.Services
 
         private void UpdateAppState()
         {
-            if (mustUpdateProductsList) appState.LastProductsListRefresh = DateTime.Now;
+            if (mustUpdateProductsList)
+            {
+                appState.LastProductsListRefresh = DateTime.Now;
+            }
 
-            if (appState.Id == 0) dbContext.AppState.Add(appState);
+            if (appState.Id == 0)
+            {
+                dbContext.AppState.Add(appState);
+            }
         }
 
         private void ReportSummaryOfPendingChanges()
         {
-            Dictionary<Type, (int nbAdded, int nbModified)> numberOfEntriesByType = new Dictionary<Type, (int nbAdded, int nbModified)>();
+            var numberOfEntriesByType = new Dictionary<Type, (int nbAdded, int nbModified)>();
             foreach (EntityEntry entry in dbContext.ChangeTracker.Entries())
             {
                 Type entryType = entry.Metadata.ClrType;
                 bool isAdded = entry.State == EntityState.Added;
                 bool isModified = entry.State == EntityState.Modified;
                 if (!numberOfEntriesByType.TryGetValue(entryType, out (int nbAdded, int nbModified) counts))
+                {
                     numberOfEntriesByType.Add(entryType, (isAdded ? 1 : 0, isModified ? 1 : 0));
+                }
                 else
+                {
                     numberOfEntriesByType[entryType] = (counts.nbAdded + (isAdded ? 1 : 0), counts.nbModified + (isModified ? 1 : 0));
+                }
             }
 
             if (numberOfEntriesByType.Values.Any(v => v.nbAdded + v.nbModified > 0))
             {
                 logger.LogInformation("Summary of changes to apply to database:");
                 foreach ((Type key, (int nbAdded, int nbModified)) in numberOfEntriesByType)
+                {
                     if (nbAdded + nbModified > 0)
+                    {
                         logger.LogInformation($"{key.Name}: {nbAdded} added, {nbModified} modified");
+                    }
+                }
             }
             else
             {
@@ -159,7 +173,10 @@ namespace XFactory.SqdcWatcher.Core.Services
             IIncludableQueryable<Product, List<SpecificationAttribute>> query = dbContext.Products
                 .AsTracking()
                 .Include(p => p.Variants).ThenInclude(v => v.Specifications);
-            await foreach (Product product in query.AsAsyncEnumerable().WithCancellation(cancellationToken)) localProducts.Add(product.Id, product);
+            await foreach (Product product in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
+            {
+                localProducts.Add(product.Id, product);
+            }
         }
 
         private async Task RefreshProducts(CancellationToken cancellationToken)

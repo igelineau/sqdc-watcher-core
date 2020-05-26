@@ -52,9 +52,21 @@ namespace XFactory.SqdcWatcher.Data.Entities.ProductVariant
 
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+
             return Equals((ProductVariant) obj);
         }
 
@@ -77,13 +89,22 @@ namespace XFactory.SqdcWatcher.Data.Entities.ProductVariant
         {
             bool hasChangedToInStock = !InStock && isInStock;
             bool hasChangedToNotInStock = InStock && !isInStock;
-            if (hasChangedToInStock) LastInStockTimestamp = DateTime.Now;
+            if (hasChangedToInStock)
+            {
+                LastInStockTimestamp = DateTime.Now;
+            }
 
             InStock = isInStock;
 
-            if (hasChangedToInStock) return StockStatusChangeResult.BecameInStock;
+            if (hasChangedToInStock)
+            {
+                return StockStatusChangeResult.BecameInStock;
+            }
 
-            if (hasChangedToNotInStock) return StockStatusChangeResult.BecameOutOfStock;
+            if (hasChangedToNotInStock)
+            {
+                return StockStatusChangeResult.BecameOutOfStock;
+            }
 
             return StockStatusChangeResult.NotChanged;
         }

@@ -61,7 +61,10 @@ namespace XFactory.SqdcWatcher.Core.Services
 
         private void SetStartedState()
         {
-            if (!runningMutex.WaitOne(TimeSpan.Zero)) throw new WatcherStartException("cannot start watcher, it is already running.");
+            if (!runningMutex.WaitOne(TimeSpan.Zero))
+            {
+                throw new WatcherStartException("cannot start watcher, it is already running.");
+            }
 
             State = WatcherState.Running;
         }

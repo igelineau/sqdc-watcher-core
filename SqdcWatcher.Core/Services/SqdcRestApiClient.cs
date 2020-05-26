@@ -53,7 +53,10 @@ namespace XFactory.SqdcWatcher.Core.Services
 
             logger.Log(LogLevel.Information, $"POST {sw.ElapsedMilliseconds}ms {resource}");
             LogRequest(request, response, sw.ElapsedMilliseconds);
-            if (response.IsSuccessful) return response.Data;
+            if (response.IsSuccessful)
+            {
+                return response.Data;
+            }
 
             throw new SqdcHttpClientException((response.Data as BaseResponse)?.Message ?? response.ErrorMessage, response.ErrorException);
         }

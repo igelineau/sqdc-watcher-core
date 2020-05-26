@@ -56,7 +56,10 @@ namespace SqdcWatcher.Slack
         {
             const string methodName = "conversations.list";
 
-            if (encodedConversationId != null) return encodedConversationId;
+            if (encodedConversationId != null)
+            {
+                return encodedConversationId;
+            }
 
             string type = config.UserName != null ? "im" : "private_channel";
             string name = config.UserName ?? config.ChannelName;
@@ -70,7 +73,11 @@ namespace SqdcWatcher.Slack
             {
                 Dictionary<string, SlackUser> usersByName = (await GetUsers()).ToDictionary(u => u.Name.ToLower());
                 usersByName.TryGetValue(name.ToLower(), out SlackUser user);
-                if (user == null) throw new SlackException($"Slack user not found in im list results: {config.UserName}");
+                if (user == null)
+                {
+                    throw new SlackException($"Slack user not found in im list results: {config.UserName}");
+                }
+
                 channelPredicate = c => c.User == user.Id;
             }
             else
@@ -93,17 +100,25 @@ namespace SqdcWatcher.Slack
 
         private static void ValidateConversationListResponse(IRestResponse<ConversationsListResponse> response)
         {
-            if (!response.IsSuccessful || response.Data == null) throw new SlackException("Slack API error", response.ErrorException);
+            if (!response.IsSuccessful || response.Data == null)
+            {
+                throw new SlackException("Slack API error", response.ErrorException);
+            }
 
-            if (response.Data?.Error != null) throw new SlackException($"Slack API error: {response.Data.Error}");
+            if (response.Data?.Error != null)
+            {
+                throw new SlackException($"Slack API error: {response.Data.Error}");
+            }
         }
 
         private void ValidateEncodedConversationId(string channelName, string conversationType)
         {
             if (encodedConversationId == null)
+            {
                 throw new SlackException(
                     $"Could not determine the conversation ID for the channel name '{channelName}' of type '{conversationType}'."
                     + $" Make sure you have the necessary scopes.");
+            }
         }
     }
 }

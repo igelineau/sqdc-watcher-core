@@ -18,11 +18,20 @@ namespace XFactory.SqdcWatcher.Core.Mappers
         protected override ProductVariant PerformMapping(ProductVariantPrice source, ProductVariant destination)
         {
             ParsedPriceInfo parsedPrices = PriceParser.ParseVariantPrice(source);
-            if (parsedPrices.ListPrice != null) destination.ListPrice = parsedPrices.ListPrice.Value;
+            if (parsedPrices.ListPrice != null)
+            {
+                destination.ListPrice = parsedPrices.ListPrice.Value;
+            }
 
-            if (parsedPrices.DisplayPrice != null) destination.DisplayPrice = parsedPrices.DisplayPrice.Value;
+            if (parsedPrices.DisplayPrice != null)
+            {
+                destination.DisplayPrice = parsedPrices.DisplayPrice.Value;
+            }
 
-            if (parsedPrices.PricePerGram != null) destination.PricePerGram = parsedPrices.PricePerGram.Value;
+            if (parsedPrices.PricePerGram != null)
+            {
+                destination.PricePerGram = parsedPrices.PricePerGram.Value;
+            }
 
             return destination;
         }

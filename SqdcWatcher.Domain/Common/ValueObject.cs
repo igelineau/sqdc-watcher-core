@@ -5,7 +5,10 @@ namespace XFactory.SqdcWatcher.Data.Entities.Common
     {
         public override bool Equals(object obj)
         {
-            if (!(obj is T valueObject)) return false;
+            if (!(obj is T valueObject))
+            {
+                return false;
+            }
 
             return EqualsCore(valueObject);
         }
@@ -21,9 +24,15 @@ namespace XFactory.SqdcWatcher.Data.Entities.Common
 
         public static bool operator ==(ValueObject<T> a, ValueObject<T> b)
         {
-            if (ReferenceEquals(a, null) && ReferenceEquals(b, null)) return true;
+            if (ReferenceEquals(a, null) && ReferenceEquals(b, null))
+            {
+                return true;
+            }
 
-            if (ReferenceEquals(a, null) || ReferenceEquals(b, null)) return false;
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+            {
+                return false;
+            }
 
             return a.Equals(b);
         }
