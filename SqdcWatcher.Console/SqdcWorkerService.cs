@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using XFactory.SqdcWatcher.Core.Interfaces;
 using XFactory.SqdcWatcher.Core.Utils;
 
@@ -11,15 +10,13 @@ namespace XFactory.SqdcWatcher.ConsoleApp
 {
     public class SqdcWorkerService : BackgroundService
     {
-        private readonly ILogger<SqdcWorkerService> logger;
         private readonly IServiceScopeFactory serviceScopeFactory;
         private ConsoleInputInterface consoleInputInterface;
         private ISqdcWatcher sqdcWatcher;
 
-        public SqdcWorkerService(IServiceScopeFactory serviceScopeFactory, ILogger<SqdcWorkerService> logger)
+        public SqdcWorkerService(IServiceScopeFactory serviceScopeFactory)
         {
             this.serviceScopeFactory = serviceScopeFactory;
-            this.logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
