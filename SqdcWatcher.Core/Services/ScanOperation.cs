@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Query;
 using Microsoft.Extensions.Logging;
 using SqdcWatcher.DataTransferObjects.DomainDto;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
@@ -170,9 +169,10 @@ namespace XFactory.SqdcWatcher.Core.Services
 
         private async Task LoadLocalProductsList(CancellationToken cancellationToken)
         {
-            IIncludableQueryable<Product, List<SpecificationAttribute>> query = dbContext.Products
+            IAsyncEnumerable<Product> query = dbContext.Products
                 .AsTracking()
-                .Include(p => p.Variants).ThenInclude(v => v.Specifications);
+                .Include(p => p.Variants).ThenInclude(v => v.Specifications)
+                .AsAsyncEnumerable();
             await foreach (Product product in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
             {
                 localProducts.Add(product.Id, product);

@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using AutoMapper;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
+using SqdcWatcher.Slack.DependencyInjection;
 using XFactory.SqdcWatcher.Core.Abstractions;
 using XFactory.SqdcWatcher.Core.Configuration;
 using XFactory.SqdcWatcher.Core.Interfaces;
@@ -20,8 +22,10 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddSqdcWatcher(this IServiceCollection services)
+        public static void AddSqdcWatcher(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddSlack(configuration);
+            
             services.AddSqdcAutoMapper();
             services.AddSqdcWatcherDbContext();
             

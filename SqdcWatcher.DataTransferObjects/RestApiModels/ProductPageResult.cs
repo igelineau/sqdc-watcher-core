@@ -1,17 +1,17 @@
+using System;
 using System.Collections.Generic;
 
 namespace SqdcWatcher.DataTransferObjects.RestApiModels
 {
     public class ProductPageResult
     {
-        public ProductPageResult(int pageNumber)
+        public ProductPageResult(List<ProductDto> products, List<Exception> exceptions)
         {
-            PageNumber = pageNumber;
-            Products = new List<ProductDto>();
+            Products = products;
+            Exceptions = exceptions;
         }
-
-        public int PageNumber { get; }
+        
         public List<ProductDto> Products { get; }
-        public bool HasNextPage { get; set; }
+        public List<Exception> Exceptions { get; }
     }
 }

@@ -34,7 +34,7 @@ namespace XFactory.SqdcWatcher.ConsoleApp
             services.AddHostedService<SqdcWorkerService>();
             services.AddTransient<ConsoleInputInterface>();
 
-            services.AddSqdcWatcher();
+            services.AddSqdcWatcher(config);
 
             services.BuildServiceProvider();
         }

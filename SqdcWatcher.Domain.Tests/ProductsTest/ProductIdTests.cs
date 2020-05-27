@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using XFactory.SqdcWatcher.Data.Entities.Products;
 
-namespace SqdcWatcher.Domain.Tests.Products
+namespace SqdcWatcher.Domain.Tests.ProductsTest
 {
     [TestFixture]
     public class ProductIdTests

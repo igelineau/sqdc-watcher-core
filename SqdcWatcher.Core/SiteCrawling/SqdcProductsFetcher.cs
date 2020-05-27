@@ -5,8 +5,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using AngleSharp;
-using AngleSharp.Dom;
 using Microsoft.Extensions.Logging;
 using RestSharp;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
@@ -16,17 +14,15 @@ namespace XFactory.SqdcWatcher.Core.SiteCrawling
 {
     public class SqdcProductsFetcher : SqdcHttpClientBase, IRemoteStore<ProductDto>
     {
-        private readonly IBrowsingContext htmlContext;
         private readonly ILogger<SqdcProductsFetcher> logger;
+        private readonly SqdcHtmlParser sqdcHtmlParser;
 
         public SqdcProductsFetcher(ILogger<SqdcProductsFetcher> logger) : base($"{BaseDomain}/{DefaultLocale}")
         {
             Client.AddDefaultHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 
             this.logger = logger;
-
-            IConfiguration htmlParserConfig = AngleSharp.Configuration.Default;
-            htmlContext = BrowsingContext.New(htmlParserConfig);
+            sqdcHtmlParser = new SqdcHtmlParser();
         }
 
         public async IAsyncEnumerable<ProductDto> GetAllItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -72,32 +68,8 @@ namespace XFactory.SqdcWatcher.Core.SiteCrawling
             IRestResponse response = await Client.ExecuteAsync(request, cancelToken);
             logger.LogDebug($"Loaded SQDC products page {pageNumber} in {sw.ElapsedMilliseconds}ms");
             EnsureResponseSuccess(response);
-
-            var pageResult = new ProductPageResult(pageNumber);
-            using IDocument htmlDoc = await htmlContext.OpenAsync(req => req.Content(response.Content), cancelToken);
-            IHtmlCollection<IElement> productsElements = htmlDoc.DocumentElement.QuerySelectorAll("div.product-tile");
-            foreach (IElement productElement in productsElements)
-            {
-                IElement titleAnchor = productElement.QuerySelector("a[data-qa=\"search-product-title\"]");
-                string title = titleAnchor.TextContent;
-
-                IElement brandElement = productElement.QuerySelector("div[class=\"js-equalized-brand\"]");
-                string brand = brandElement.TextContent;
-
-                string url = BaseDomain + titleAnchor.GetAttribute("href");
-                string id = titleAnchor.GetAttribute("data-productid");
-
-                var productSummary = new ProductDto
-                {
-                    Id = id,
-                    Title = title,
-                    Url = url,
-                    Brand = brand
-                };
-                pageResult.Products.Add(productSummary);
-            }
-
-            return pageResult;
+            
+            return await sqdcHtmlParser.ParseProductsPage(response.Content, cancelToken);
         }
 
         private static void EnsureResponseSuccess(IRestResponse response) =>

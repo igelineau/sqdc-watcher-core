@@ -7,7 +7,7 @@ namespace XFactory.SqdcWatcher.Core.HttpClient
 {
     public abstract class SqdcHttpClientBase
     {
-        protected const string BaseDomain = "https://www.sqdc.ca";
+        public const string BaseDomain = "https://www.sqdc.ca";
         protected const string DefaultLocale = "en-CA";
 
         protected readonly rs.RestClient Client;
