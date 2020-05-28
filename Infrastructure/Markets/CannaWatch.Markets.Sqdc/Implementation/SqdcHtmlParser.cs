@@ -4,13 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
-using CannaWatch.Markets.Sqdc.Abstractions;
 using CannaWatch.Markets.Sqdc.HttpClient;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
 
 namespace CannaWatch.Markets.Sqdc.Implementation
 {
-    public class SqdcHtmlParser : IProductHtmlParser
+    public class SqdcHtmlParser
     {
         private static readonly IConfiguration HtmlParserConfig = Configuration.Default;
 

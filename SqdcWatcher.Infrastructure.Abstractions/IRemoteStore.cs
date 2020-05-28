@@ -3,8 +3,10 @@ using System.Threading;
 
 namespace SqdcWatcher.Infrastructure.Abstractions
 {
-    public interface IRemoteStore<out T> where T : class
+    public interface IRemoteStore<TMarketFacade, out TData>
+        where TMarketFacade : IMarketFacade
+        where TData : class
     {
-        IAsyncEnumerable<T> GetAllItemsAsync(CancellationToken cancellationToken);
+        IAsyncEnumerable<TData> GetAllItemsAsync(CancellationToken cancellationToken);
     }
 }

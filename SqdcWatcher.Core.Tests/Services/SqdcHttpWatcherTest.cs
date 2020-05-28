@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -13,18 +14,18 @@ namespace SqdcWatcher.Core.Tests.Services
     public class SqdcHttpWatcherTest
     {
         private Mock<IHostApplicationLifetime> applicationLifetimeMock;
-        private ILogger<SqdcHttpWatcher> logger;
-        private Mock<Func<IScanOperation>> scanOperationFactoryMock;
-        private SqdcHttpWatcher watcher;
+        private ILogger<MarketsWatcher> logger;
+        private Mock<IEnumerable<Func<IScanOperation>>> scanOperationFactoryMock;
+        private MarketsWatcher watcher;
 
         [SetUp]
         public void SetUp()
         {
-            logger = new Mock<ILogger<SqdcHttpWatcher>>(MockBehavior.Loose).Object;
-            scanOperationFactoryMock = new Mock<Func<IScanOperation>>();
+            logger = new Mock<ILogger<MarketsWatcher>>(MockBehavior.Loose).Object;
+            scanOperationFactoryMock = new Mock<IEnumerable<Func<IScanOperation>>>();
             applicationLifetimeMock = new Mock<IHostApplicationLifetime>();
 
-            watcher = new SqdcHttpWatcher(
+            watcher = new MarketsWatcher(
                 logger,
                 scanOperationFactoryMock.Object,
                 applicationLifetimeMock.Object);

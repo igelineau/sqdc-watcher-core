@@ -14,8 +14,9 @@ using SqdcWatcher.Infrastructure.Abstractions;
 namespace XFactory.SqdcWatcher.Core.Caching
 {
     [UsedImplicitly]
-    public class ProductsFileCacheProxy<TInnerService> : DefaultCachingProxy<ProductDto, TInnerService>
-        where TInnerService : class, IRemoteStore<ProductDto>
+    public class ProductsFileCacheProxy<TMarketFacade, TInnerService> : DefaultCachingProxy<TMarketFacade, ProductDto, TInnerService>
+        where TInnerService : class, IRemoteStore<TMarketFacade, ProductDto>
+        where TMarketFacade : IMarketFacade
     {
         private readonly string productsCacheFile;
 

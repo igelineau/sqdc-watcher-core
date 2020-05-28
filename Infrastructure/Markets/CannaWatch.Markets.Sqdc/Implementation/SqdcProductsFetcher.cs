@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using CannaWatch.Markets.Sqdc.Abstractions;
 using CannaWatch.Markets.Sqdc.HttpClient;
 using Microsoft.Extensions.Logging;
 using RestSharp;
@@ -14,12 +13,12 @@ using SqdcWatcher.Infrastructure.Abstractions;
 
 namespace CannaWatch.Markets.Sqdc.Implementation
 {
-    public class SqdcProductsFetcher : SqdcHttpClientBase, IRemoteStore<ProductDto>
+    public class SqdcProductsFetcher : SqdcHttpClientBase, IRemoteStore<SqdcMarketFacade, ProductDto>
     {
         private readonly ILogger<SqdcProductsFetcher> logger;
-        private readonly IProductHtmlParser sqdcHtmlParser;
+        private readonly SqdcHtmlParser sqdcHtmlParser;
 
-        public SqdcProductsFetcher(IProductHtmlParser productHtmlParser, ILogger<SqdcProductsFetcher> logger)
+        public SqdcProductsFetcher(SqdcHtmlParser productHtmlParser, ILogger<SqdcProductsFetcher> logger)
             : base($"{BaseDomain}/{DefaultLocale}")
         {
             Client.AddDefaultHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");

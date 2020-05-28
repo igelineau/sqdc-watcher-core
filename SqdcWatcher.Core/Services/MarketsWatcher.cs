@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,26 +19,26 @@ namespace XFactory.SqdcWatcher.Core.Services
         Stopped
     }
 
-    public class SqdcHttpWatcher : ISqdcWatcher
+    public class MarketsWatcher : ISqdcWatcher
     {
         private readonly IHostApplicationLifetime applicationLifetime;
-        private readonly ILogger<SqdcHttpWatcher> logger;
+        private readonly ILogger<MarketsWatcher> logger;
+        private readonly IEnumerable<Func<IScanOperation>> scanOperationsFactories;
         private readonly TimeSpan loopInterval = TimeSpan.FromMinutes(6);
 
         private readonly ManualResetEventSlim resumeLoopEvent;
         private readonly Mutex runningMutex;
-        private readonly Func<IScanOperation> scanOperationFactory;
 
         private volatile bool isFullRefreshRequested;
         private Stopwatch loopStopwatch;
 
-        public SqdcHttpWatcher(
-            ILogger<SqdcHttpWatcher> logger,
-            Func<IScanOperation> scanOperationFactory,
+        public MarketsWatcher(
+            ILogger<MarketsWatcher> logger,
+            IEnumerable<Func<IScanOperation>> scanOperationsFactories,
             IHostApplicationLifetime applicationLifetime)
         {
             this.logger = logger;
-            this.scanOperationFactory = scanOperationFactory;
+            this.scanOperationsFactories = scanOperationsFactories;
             this.applicationLifetime = applicationLifetime;
             resumeLoopEvent = new ManualResetEventSlim(true);
             runningMutex = new Mutex(false);
@@ -122,6 +123,16 @@ namespace XFactory.SqdcWatcher.Core.Services
                 $"Scan completed in {loopStopwatch.Elapsed.ToSmartFormat()}. Next execution: {nextExecutionTime:H\\hmm}");
         }
 
+        private async Task ExecuteScan(CancellationToken cancelToken)
+        {
+            logger.LogInformation("--- Watcher - Refresh products started ---");
+            foreach (Func<IScanOperation> factory in scanOperationsFactories)
+            {
+                IScanOperation scanOperation = factory.Invoke();
+                await scanOperation.Execute(isFullRefreshRequested, cancelToken);
+            }
+        }
+
         private void StopWorker()
         {
             State = WatcherState.Stopped;
@@ -135,13 +146,6 @@ namespace XFactory.SqdcWatcher.Core.Services
 
             logger.LogInformation("Stopping the application because of an error");
             applicationLifetime.StopApplication();
-        }
-
-        private async Task ExecuteScan(CancellationToken cancelToken)
-        {
-            logger.LogInformation("--- Watcher - Refresh products started ---");
-            IScanOperation scanOperation = scanOperationFactory.Invoke();
-            await scanOperation.Execute(isFullRefreshRequested, cancelToken);
         }
 
         private void BlockFor(TimeSpan timeToBlock, CancellationToken cancelToken)

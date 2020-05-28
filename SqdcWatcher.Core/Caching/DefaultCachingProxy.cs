@@ -7,12 +7,13 @@ using SqdcWatcher.Infrastructure.Abstractions;
 
 namespace XFactory.SqdcWatcher.Core.Caching
 {
-    public abstract class DefaultCachingProxy<TEntity, TInnerStore> : IRemoteStore<TEntity>
+    public abstract class DefaultCachingProxy<TMarketFacade, TEntity, TInnerStore> : IRemoteStore<TMarketFacade, TEntity>
+        where TMarketFacade : IMarketFacade
         where TEntity : class
-        where TInnerStore : class, IRemoteStore<TEntity>
+        where TInnerStore : IRemoteStore<TMarketFacade, TEntity>
     {
         private readonly Func<TEntity, string> entityKeySelector;
-        private readonly TInnerStore innerService;
+        private readonly IRemoteStore<TMarketFacade, TEntity> innerService;
         protected readonly Dictionary<string, TEntity> ItemsCache = new Dictionary<string, TEntity>();
 
         protected DefaultCachingProxy(TInnerStore innerService, Func<TEntity, string> entityKeySelector)
