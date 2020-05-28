@@ -4,14 +4,15 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using CannaWatch.Markets.Sqdc.HttpClient;
 using Microsoft.Extensions.Logging;
 using RestSharp;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
-using XFactory.SqdcWatcher.Core.HttpClient;
+using SqdcWatcher.Infrastructure.Abstractions;
 
-namespace XFactory.SqdcWatcher.Core.Services
+namespace CannaWatch.Markets.Sqdc.Implementation
 {
-    public class SqdcRestApiClient : SqdcHttpClientBase
+    public class SqdcRestApiClient : SqdcHttpClientBase, IMarketDataFetcher
     {
         private readonly ILogger<SqdcRestApiClient> logger;
 

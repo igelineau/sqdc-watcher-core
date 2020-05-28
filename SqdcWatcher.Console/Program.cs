@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using CannaWatch.Markets.Sqdc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -34,7 +35,9 @@ namespace XFactory.SqdcWatcher.ConsoleApp
             services.AddHostedService<SqdcWorkerService>();
             services.AddTransient<ConsoleInputInterface>();
 
-            services.AddSqdcWatcher(config);
+            services.AddCannaWatch();
+            services.AddCannaWatchSlack(config);
+            services.AddCannaWatchSqdcMarket();
 
             services.BuildServiceProvider();
         }

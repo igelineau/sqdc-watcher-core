@@ -9,8 +9,8 @@
     <ItemGroup>
       <ProjectReference Include="..\SqdcWatcher.DataTransferObjects\SqdcWatcher.DataTransferObjects.csproj" />
       <ProjectReference Include="..\SqdcWatcher.Domain\SqdcWatcher.Domain.csproj" />
+      <ProjectReference Include="..\SqdcWatcher.Infrastructure.Abstractions\SqdcWatcher.Infrastructure.Abstractions.csproj" />
       <ProjectReference Include="..\SqdcWatcher.Infrastructure.DataAccess\SqdcWatcher.Infrastructure.DataAccess.csproj" />
-      <ProjectReference Include="..\SqdcWatcher.Infrastructure.Slack\SqdcWatcher.Infrastructure.Slack.csproj" />
       <ProjectReference Include="..\SqdcWatcher.Infrastructure\SqdcWatcher.Infrastructure.csproj" />
     </ItemGroup>
     

@@ -3,7 +3,7 @@ using RestSharp;
 using rs = RestSharp;
 
 
-namespace XFactory.SqdcWatcher.Core.HttpClient
+namespace CannaWatch.Markets.Sqdc.HttpClient
 {
     public abstract class SqdcHttpClientBase
     {

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace SqdcWatcher.Infrastructure
+namespace SqdcWatcher.Infrastructure.Abstractions
 {
     public interface ISlackClient
     {

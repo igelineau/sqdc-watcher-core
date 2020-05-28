@@ -5,24 +5,26 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using CannaWatch.Markets.Sqdc.HttpClient;
 using Microsoft.Extensions.Logging;
 using RestSharp;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
-using XFactory.SqdcWatcher.Core.HttpClient;
+using SqdcWatcher.Infrastructure.Abstractions;
 
-namespace XFactory.SqdcWatcher.Core.SiteCrawling
+namespace CannaWatch.Markets.Sqdc.Implementation
 {
     public class SqdcProductsFetcher : SqdcHttpClientBase, IRemoteStore<ProductDto>
     {
         private readonly ILogger<SqdcProductsFetcher> logger;
-        private readonly SqdcHtmlParser sqdcHtmlParser;
+        private readonly IProductHtmlParser sqdcHtmlParser;
 
-        public SqdcProductsFetcher(ILogger<SqdcProductsFetcher> logger) : base($"{BaseDomain}/{DefaultLocale}")
+        public SqdcProductsFetcher(IProductHtmlParser productHtmlParser, ILogger<SqdcProductsFetcher> logger)
+            : base($"{BaseDomain}/{DefaultLocale}")
         {
             Client.AddDefaultHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
 
             this.logger = logger;
-            sqdcHtmlParser = new SqdcHtmlParser();
+            sqdcHtmlParser = productHtmlParser;
         }
 
         public async IAsyncEnumerable<ProductDto> GetAllItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
@@ -66,7 +68,7 @@ namespace XFactory.SqdcWatcher.Core.SiteCrawling
 
             var sw = Stopwatch.StartNew();
             IRestResponse response = await Client.ExecuteAsync(request, cancelToken);
-            logger.LogDebug($"Loaded SQDC products page {pageNumber} in {sw.ElapsedMilliseconds}ms");
+            logger.LogDebug($"Loaded products page {pageNumber} in {sw.ElapsedMilliseconds}ms");
             EnsureResponseSuccess(response);
             
             return await sqdcHtmlParser.ParseProductsPage(response.Content, cancelToken);

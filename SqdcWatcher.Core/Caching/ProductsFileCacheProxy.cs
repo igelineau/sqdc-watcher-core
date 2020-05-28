@@ -8,14 +8,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
+using SqdcWatcher.Infrastructure.Abstractions;
 
 namespace XFactory.SqdcWatcher.Core.SiteCrawling
 {
-    public class SqdcProductsFileCacheProxy : DefaultCachingProxy<ProductDto, SqdcProductsFetcher>
+    public class ProductsFileCacheProxy : DefaultCachingProxy<ProductDto, IRemoteStore<ProductDto>>, IProductsCachingProxy
     {
         private readonly string productsCacheFile;
 
-        public SqdcProductsFileCacheProxy(IHostEnvironment hostEnvironment, SqdcProductsFetcher innerService) : base(innerService, product => product.Id)
+        public ProductsFileCacheProxy(IHostEnvironment hostEnvironment, IRemoteStore<ProductDto> innerService) : base(innerService, product => product.Id)
         {
             productsCacheFile = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -69,7 +70,7 @@ namespace XFactory.SqdcWatcher.Core.SiteCrawling
 
         private async Task<List<ProductDto>> LoadFromPersistedCache(CancellationToken cancellationToken)
         {
-            using FileStream inputStream = File.OpenRead(productsCacheFile);
+            await using FileStream inputStream = File.OpenRead(productsCacheFile);
             return await JsonSerializer.DeserializeAsync<List<ProductDto>>(inputStream, new JsonSerializerOptions(), cancellationToken);
         }
     }

@@ -4,12 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
+using CannaWatch.Markets.Sqdc.HttpClient;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
-using XFactory.SqdcWatcher.Core.HttpClient;
+using SqdcWatcher.Infrastructure.Abstractions;
 
-namespace XFactory.SqdcWatcher.Core.SiteCrawling
+namespace CannaWatch.Markets.Sqdc.Implementation
 {
-    public class SqdcHtmlParser
+    public class SqdcHtmlParser : IProductHtmlParser
     {
         private static readonly IConfiguration HtmlParserConfig = AngleSharp.Configuration.Default;
 

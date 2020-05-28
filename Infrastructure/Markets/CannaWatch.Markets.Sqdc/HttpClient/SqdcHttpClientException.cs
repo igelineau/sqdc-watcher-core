@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace XFactory.SqdcWatcher.Core.HttpClient
+namespace CannaWatch.Markets.Sqdc.HttpClient
 {
     [Serializable]
     public class SqdcHttpClientException : Exception

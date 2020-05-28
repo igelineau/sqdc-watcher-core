@@ -1,12 +1,13 @@
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using SqdcWatcher.Infrastructure;
+using SqdcWatcher.Infrastructure.Abstractions;
+using SqdcWatcher.Slack;
 
-namespace SqdcWatcher.Slack.DependencyInjection
+// ReSharper disable once CheckNamespace
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddSlack(this IServiceCollection services, IConfiguration configuration)
+        public static void AddCannaWatchSlack(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<SlackConfiguration>(configuration.GetSection("Slack"));
             services.AddTransient<ISlackClient, SlackClient>();

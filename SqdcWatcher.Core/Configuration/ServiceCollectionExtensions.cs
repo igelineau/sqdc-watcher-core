@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using AutoMapper;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
-using SqdcWatcher.Slack.DependencyInjection;
+using SqdcWatcher.Infrastructure.Abstractions;
 using XFactory.SqdcWatcher.Core.Abstractions;
-using XFactory.SqdcWatcher.Core.Configuration;
 using XFactory.SqdcWatcher.Core.Interfaces;
 using XFactory.SqdcWatcher.Core.Mappers;
 using XFactory.SqdcWatcher.Core.MappingFilters;
@@ -22,10 +19,8 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddSqdcWatcher(this IServiceCollection services, IConfiguration configuration)
+        public static void AddCannaWatch(this IServiceCollection services)
         {
-            services.AddSlack(configuration);
-            
             services.AddSqdcAutoMapper();
             services.AddSqdcWatcherDbContext();
             
@@ -38,17 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddFactory<IScanOperation, ScanOperation>();
             services.AddScoped<ISqdcWatcher, SqdcHttpWatcher>();
 
-            services.AddTransient<SqdcRestApiClient>();
-
-            services.AddTransient<SqdcProductsFetcher>();
-            services.AddTransient<SqdcProductsFileCacheProxy>();
-            services.AddTransient<IRemoteStore<ProductDto>>(ctx =>
-            {
-                IOptions<SqdcConfiguration> sqdcConfiguration = ctx.GetRequiredService<IOptions<SqdcConfiguration>>();
-                return sqdcConfiguration.Value.UseProductsHtmlCaching
-                    ? (IRemoteStore<ProductDto>) ctx.GetRequiredService<SqdcProductsFileCacheProxy>()
-                    : ctx.GetRequiredService<SqdcProductsFetcher>();
-            });
+            services.AddTransient<IProductsCachingProxy, ProductsFileCacheProxy>();
         }
         
         private static void AddSqdcAutoMapper(this IServiceCollection collection)

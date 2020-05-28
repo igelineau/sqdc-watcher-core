@@ -28,6 +28,7 @@ public class $CLASSNAME$ : UnitTestBase
     {
     }
 }</s:String>
+	<s:Boolean x:Key="/Default/UserDictionary/Words/=Canna/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Serilog/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Sqdc/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=sqlite/@EntryIndexedValue">True</s:Boolean>

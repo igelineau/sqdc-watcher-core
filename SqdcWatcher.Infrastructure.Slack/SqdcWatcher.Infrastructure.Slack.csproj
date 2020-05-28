@@ -18,6 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\SqdcWatcher.Infrastructure.Abstractions\SqdcWatcher.Infrastructure.Abstractions.csproj" />
       <ProjectReference Include="..\SqdcWatcher.Infrastructure\SqdcWatcher.Infrastructure.csproj" />
     </ItemGroup>
 

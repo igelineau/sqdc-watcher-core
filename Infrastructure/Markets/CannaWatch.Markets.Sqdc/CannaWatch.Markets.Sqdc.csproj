@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AngleSharp" Version="0.14.0" />
+      <PackageReference Include="restsharp" Version="106.11.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\SqdcWatcher.Core\SqdcWatcher.Core.csproj" />
+      <ProjectReference Include="..\..\..\SqdcWatcher.Infrastructure.Abstractions\SqdcWatcher.Infrastructure.Abstractions.csproj" />
+      <ProjectReference Include="..\..\..\SqdcWatcher.Infrastructure.DataAccess\SqdcWatcher.Infrastructure.DataAccess.csproj" />
+    </ItemGroup>
+
+</Project>

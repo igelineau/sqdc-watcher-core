@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RestSharp;
 using RestSharp.Authenticators;
-using SqdcWatcher.Infrastructure;
+using SqdcWatcher.Infrastructure.Abstractions;
 using SqdcWatcher.Slack.Models;
 using rs = RestSharp;
 

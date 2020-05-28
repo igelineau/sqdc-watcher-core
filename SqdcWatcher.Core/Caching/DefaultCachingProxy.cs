@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using SqdcWatcher.Infrastructure.Abstractions;
 
 namespace XFactory.SqdcWatcher.Core.SiteCrawling
 {

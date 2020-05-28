@@ -53,6 +53,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\Markets\CannaWatch.Markets.Sqdc\CannaWatch.Markets.Sqdc.csproj" />
     <ProjectReference Include="..\SqdcWatcher.Core\SqdcWatcher.Core.csproj" />
     <ProjectReference Include="..\SqdcWatcher.DataTransferObjects\SqdcWatcher.DataTransferObjects.csproj" />
     <ProjectReference Include="..\SqdcWatcher.Domain\SqdcWatcher.Domain.csproj" />

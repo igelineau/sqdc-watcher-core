@@ -10,11 +10,10 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.Logging;
 using SqdcWatcher.DataTransferObjects.DomainDto;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
-using SqdcWatcher.Infrastructure;
+using SqdcWatcher.Infrastructure.Abstractions;
 using XFactory.SqdcWatcher.Core.Abstractions;
 using XFactory.SqdcWatcher.Core.Interfaces;
 using XFactory.SqdcWatcher.Core.Mappers;
-using XFactory.SqdcWatcher.Core.SiteCrawling;
 using XFactory.SqdcWatcher.Core.Utils;
 using XFactory.SqdcWatcher.Data.Entities;
 using XFactory.SqdcWatcher.Data.Entities.Common;
@@ -28,18 +27,17 @@ namespace XFactory.SqdcWatcher.Core.Services
     [UsedImplicitly]
     public class ScanOperation : IScanOperation
     {
-        private readonly Func<SqdcDbContext> dbContextFactory;
+        private readonly TimeSpan refreshProductsListInterval = TimeSpan.FromMinutes(30);
         private readonly Dictionary<string, Product> localProducts = new Dictionary<string, Product>();
-        private readonly ILogger<ScanOperation> logger;
         private readonly List<Product> newProducts = new List<Product>();
 
+        private readonly ILogger<ScanOperation> logger;
+        private readonly Func<SqdcDbContext> dbContextFactory;
         private readonly ProductMapper productMapper;
         private readonly IEnumerable<VisitorBase<Product>> productVisitors;
-        private readonly TimeSpan refreshProductsListInterval = TimeSpan.FromMinutes(30);
-        private readonly SqdcRestApiClient restClient;
+        private readonly IMarketDataFetcher marketDataFetcher;
         private readonly ISlackClient slackPostClient;
         private readonly SpecificationsMapper specificationsMapper;
-
         private readonly IRemoteStore<ProductDto> sqdcProductsFetcher;
         private readonly VariantPricesMapper variantPricesMapper;
         private AppState appState;
@@ -49,7 +47,7 @@ namespace XFactory.SqdcWatcher.Core.Services
 
         public ScanOperation(
             IRemoteStore<ProductDto> sqdcProductsFetcher,
-            SqdcRestApiClient restClient,
+            IMarketDataFetcher marketDataFetcher,
             VariantPricesMapper variantPricesMapper,
             Func<SqdcDbContext> dbContextFactory,
             ILogger<ScanOperation> logger,
@@ -59,7 +57,7 @@ namespace XFactory.SqdcWatcher.Core.Services
             IEnumerable<VisitorBase<Product>> productVisitors)
         {
             this.sqdcProductsFetcher = sqdcProductsFetcher;
-            this.restClient = restClient;
+            this.marketDataFetcher = marketDataFetcher;
             this.productMapper = productMapper;
             this.variantPricesMapper = variantPricesMapper;
             this.dbContextFactory = dbContextFactory;
@@ -73,7 +71,7 @@ namespace XFactory.SqdcWatcher.Core.Services
         {
             await using (dbContext = dbContextFactory())
             {
-                await InitializeOptions(forceProductsRefresh);
+                await PrepareExecution(forceProductsRefresh);
                 await ExecuteInternal(cancellationToken);
                 UpdateAppState();
 
@@ -90,7 +88,7 @@ namespace XFactory.SqdcWatcher.Core.Services
             logger.LogInformation($"{localProducts.Count} total products ({newProducts.Count} new)");
         }
 
-        private async Task InitializeOptions(bool forceProductsRefresh)
+        private async Task PrepareExecution(bool forceProductsRefresh)
         {
             appState = await dbContext.AppState.AsTracking().FirstOrDefaultAsync() ?? new AppState();
             mustUpdateProductsList =
@@ -187,25 +185,35 @@ namespace XFactory.SqdcWatcher.Core.Services
                 var sw = Stopwatch.StartNew();
                 await foreach (ProductDto productDto in sqdcProductsFetcher.GetAllItemsAsync(cancellationToken))
                 {
-                    bool isNewProduct = !localProducts.TryGetValue(productDto.Id, out Product dbProduct);
-                    dbProduct = productMapper.Map(productDto, dbProduct);
-                    if (isNewProduct)
-                    {
-                        localProducts.Add(dbProduct.Id, dbProduct);
-                        newProducts.Add(dbProduct);
-                        await dbContext.Products.AddAsync(dbProduct, cancellationToken);
-                    }
+                    await AddProductIfNew(cancellationToken, productDto);
                 }
 
                 logger.LogInformation($"Refreshed products in {sw.Elapsed.ToSmartFormat()}");
             }
         }
 
+        private async Task AddProductIfNew(CancellationToken cancellationToken, ProductDto productDto)
+        {
+            bool isNewProduct = !localProducts.TryGetValue(productDto.Id, out Product dbProduct);
+            dbProduct = productMapper.Map(productDto, dbProduct);
+            if (isNewProduct)
+            {
+                await AddNewProduct(dbProduct, cancellationToken);
+            }
+        }
+
+        private async Task AddNewProduct(Product dbProduct, CancellationToken cancellationToken)
+        {
+            localProducts.Add(dbProduct.Id, dbProduct);
+            newProducts.Add(dbProduct);
+            await dbContext.Products.AddAsync(dbProduct, cancellationToken);
+        }
+
         private async Task RefreshVariantsAndPrices(CancellationToken cancelToken)
         {
             if (mustUpdateProductsList)
             {
-                VariantsPricesResponse pricesResponse = await restClient.GetVariantsPrices(localProducts.Keys, cancelToken);
+                VariantsPricesResponse pricesResponse = await marketDataFetcher.GetVariantsPrices(localProducts.Keys, cancelToken);
                 foreach (ProductPrice productPrice in pricesResponse.ProductPrices)
                 {
                     Product product = localProducts[productPrice.ProductId];
@@ -244,7 +252,7 @@ namespace XFactory.SqdcWatcher.Core.Services
                 try
                 {
                     SpecificationsResponse response =
-                        await restClient.GetSpecifications(variant.ProductId, variant.Id.ToString(), cancellationToken);
+                        await marketDataFetcher.GetSpecifications(variant.ProductId, variant.Id.ToString(), cancellationToken);
                     specificationsMapper.Map(response, variant.Specifications);
                     await dbContext.SpecificationAttribute.AddRangeAsync(variant.Specifications, cancellationToken);
                 }
@@ -258,7 +266,7 @@ namespace XFactory.SqdcWatcher.Core.Services
         private async Task UpdateInStockStatuses(CancellationToken cancelToken)
         {
             List<ProductVariant> allVariants = localProducts.Values.SelectMany(p => p.Variants).ToList();
-            HashSet<long> variantsIdsInStock = (await restClient.GetInventoryItems(allVariants.Select(v => v.Id), cancelToken)).ToHashSet();
+            HashSet<long> variantsIdsInStock = (await marketDataFetcher.GetInventoryItems(allVariants.Select(v => v.Id), cancelToken)).ToHashSet();
             foreach (ProductVariant variant in allVariants)
             {
                 StockStatusChangeResult result = variant.SetStockStatus(variantsIdsInStock.Contains(variant.Id));
