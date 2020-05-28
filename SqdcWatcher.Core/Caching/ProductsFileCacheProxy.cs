@@ -6,17 +6,20 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
 using SqdcWatcher.Infrastructure.Abstractions;
 
-namespace XFactory.SqdcWatcher.Core.SiteCrawling
+namespace XFactory.SqdcWatcher.Core.Caching
 {
-    public class ProductsFileCacheProxy : DefaultCachingProxy<ProductDto, IRemoteStore<ProductDto>>, IProductsCachingProxy
+    [UsedImplicitly]
+    public class ProductsFileCacheProxy<TInnerService> : DefaultCachingProxy<ProductDto, TInnerService>
+        where TInnerService : class, IRemoteStore<ProductDto>
     {
         private readonly string productsCacheFile;
 
-        public ProductsFileCacheProxy(IHostEnvironment hostEnvironment, IRemoteStore<ProductDto> innerService) : base(innerService, product => product.Id)
+        public ProductsFileCacheProxy(IHostEnvironment hostEnvironment, TInnerService innerService) : base(innerService, product => product.Id)
         {
             productsCacheFile = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),

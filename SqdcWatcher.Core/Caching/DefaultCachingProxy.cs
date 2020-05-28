@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using SqdcWatcher.Infrastructure.Abstractions;
 
-namespace XFactory.SqdcWatcher.Core.SiteCrawling
+namespace XFactory.SqdcWatcher.Core.Caching
 {
     public abstract class DefaultCachingProxy<TEntity, TInnerStore> : IRemoteStore<TEntity>
         where TEntity : class

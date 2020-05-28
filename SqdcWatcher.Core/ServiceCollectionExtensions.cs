@@ -4,13 +4,12 @@ using System.Linq;
 using System.Reflection;
 using AutoMapper;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
-using SqdcWatcher.Infrastructure.Abstractions;
 using XFactory.SqdcWatcher.Core.Abstractions;
+using XFactory.SqdcWatcher.Core.Caching;
 using XFactory.SqdcWatcher.Core.Interfaces;
 using XFactory.SqdcWatcher.Core.Mappers;
 using XFactory.SqdcWatcher.Core.MappingFilters;
 using XFactory.SqdcWatcher.Core.Services;
-using XFactory.SqdcWatcher.Core.SiteCrawling;
 using XFactory.SqdcWatcher.Data.Entities.Products;
 using XFactory.SqdcWatcher.Data.Entities.ProductVariant;
 
@@ -32,8 +31,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddFactory<IScanOperation, ScanOperation>();
             services.AddScoped<ISqdcWatcher, SqdcHttpWatcher>();
-
-            services.AddTransient<IProductsCachingProxy, ProductsFileCacheProxy>();
+            services.AddTransient(typeof(ProductsFileCacheProxy<>));
         }
         
         private static void AddSqdcAutoMapper(this IServiceCollection collection)
