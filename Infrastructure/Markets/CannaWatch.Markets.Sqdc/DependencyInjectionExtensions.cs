@@ -1,3 +1,4 @@
+using CannaWatch.Markets.Sqdc.Abstractions;
 using CannaWatch.Markets.Sqdc.Implementation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

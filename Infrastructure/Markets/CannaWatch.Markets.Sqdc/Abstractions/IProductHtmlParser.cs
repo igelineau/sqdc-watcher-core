@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
 
-namespace SqdcWatcher.Infrastructure.Abstractions
+namespace CannaWatch.Markets.Sqdc.Abstractions
 {
     public interface IProductHtmlParser
     {

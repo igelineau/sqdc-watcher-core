@@ -4,15 +4,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
+using CannaWatch.Markets.Sqdc.Abstractions;
 using CannaWatch.Markets.Sqdc.HttpClient;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
-using SqdcWatcher.Infrastructure.Abstractions;
 
 namespace CannaWatch.Markets.Sqdc.Implementation
 {
     public class SqdcHtmlParser : IProductHtmlParser
     {
-        private static readonly IConfiguration HtmlParserConfig = AngleSharp.Configuration.Default;
+        private static readonly IConfiguration HtmlParserConfig = Configuration.Default;
 
         public async Task<ProductPageResult> ParseProductsPage(string rawHtml, CancellationToken cancelToken)
         {

@@ -44,7 +44,7 @@ namespace XFactory.SqdcWatcher.Core.Services
         private SqdcDbContext dbContext;
 
         private bool mustUpdateProductsList;
-
+        
         public ScanOperation(
             IRemoteStore<ProductDto> sqdcProductsFetcher,
             IMarketDataFetcher marketDataFetcher,

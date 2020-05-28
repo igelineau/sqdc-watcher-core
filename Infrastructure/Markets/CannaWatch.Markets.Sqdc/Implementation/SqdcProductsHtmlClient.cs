@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using CannaWatch.Markets.Sqdc.Abstractions;
 using CannaWatch.Markets.Sqdc.HttpClient;
 using Microsoft.Extensions.Logging;
 using RestSharp;
