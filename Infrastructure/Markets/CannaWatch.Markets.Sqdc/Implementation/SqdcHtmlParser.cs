@@ -47,11 +47,9 @@ namespace CannaWatch.Markets.Sqdc.Implementation
             string url = SqdcHttpClientBase.BaseDomain + titleAnchor.GetAttribute("href");
             string id = titleAnchor.GetAttribute("data-productid");
 
-            var productSummary = new ProductDto
+            var productSummary = new ProductDto(id, url)
             {
-                Id = id,
                 Title = title,
-                Url = url,
                 Brand = brand
             };
             return productSummary;

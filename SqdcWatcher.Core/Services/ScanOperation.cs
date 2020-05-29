@@ -88,8 +88,8 @@ namespace XFactory.SqdcWatcher.Core.Services
         private async Task ExecuteInternal(CancellationToken cancellationToken)
         {
             await Task.WhenAll(
-                LoadLocalProductsList(cancellationToken),
-                RefreshProducts(cancellationToken));
+            LoadLocalProductsList(cancellationToken),
+            RefreshProducts(cancellationToken));
 
             await RefreshVariantsAndPrices(cancellationToken);
             await UpdateInStockStatuses(cancellationToken);

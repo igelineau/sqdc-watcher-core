@@ -17,14 +17,14 @@
   <ItemGroup>
     <PackageReference Include="Alba.CsConsoleFormat" Version="1.0.0" />
     <PackageReference Include="Jetbrains.Annotations" Version="2020.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.3" />
-    <PackageReference Include="microsoft.extensions.configuration.json" Version="3.1.3" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.3" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.3" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.3" />
-    <PackageReference Include="microsoft.extensions.logging" Version="3.1.3" />
-    <PackageReference Include="microsoft.extensions.logging.console" Version="3.1.3" />
-    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.4" />
+    <PackageReference Include="microsoft.extensions.configuration.json" Version="3.1.4" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.4" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.4" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.1.4" />
+    <PackageReference Include="microsoft.extensions.logging" Version="3.1.4" />
+    <PackageReference Include="microsoft.extensions.logging.console" Version="3.1.4" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.1.4" />
     <PackageReference Include="serilog.sinks.console" Version="3.1.1" />
     <PackageReference Include="serilog.sinks.file" Version="4.1.0" />
     <PackageReference Include="SonarAnalyzer.CSharp" Version="8.7.0.17535" />
@@ -53,6 +53,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Infrastructure\Markets\CannaWatch.Markets.CannaFarms\CannaWatch.Markets.CannaFarms.csproj" />
     <ProjectReference Include="..\Infrastructure\Markets\CannaWatch.Markets.Sqdc\CannaWatch.Markets.Sqdc.csproj" />
     <ProjectReference Include="..\SqdcWatcher.Core\SqdcWatcher.Core.csproj" />
     <ProjectReference Include="..\SqdcWatcher.DataTransferObjects\SqdcWatcher.DataTransferObjects.csproj" />

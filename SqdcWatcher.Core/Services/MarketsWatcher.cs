@@ -143,6 +143,7 @@ namespace XFactory.SqdcWatcher.Core.Services
         private void HandleLoopException(Exception exception)
         {
             logger.LogError(exception, exception.Message);
+            StopWorker();
 
             logger.LogInformation("Stopping the application because of an error");
             applicationLifetime.StopApplication();

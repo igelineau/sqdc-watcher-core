@@ -21,8 +21,8 @@ namespace CannaWatch.Markets.Sqdc.Implementation
             this.logger = logger;
 
             AddDefaultRequestHeader("Accept", "application/json, text/javascript, */*; q=0.01");
-            AddDefaultRequestHeader("X-Requested-With", "XMLHttpRequest");
             AddDefaultRequestHeader("Content-Type", "application/json; charset=utf-8");
+            AddDefaultRequestHeader("X-Requested-With", "XMLHttpRequest");
         }
 
         public async Task<VariantsPricesResponse> GetVariantsPrices(IEnumerable<string> productIds, CancellationToken cancelToken)

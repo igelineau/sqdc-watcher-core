@@ -1,5 +1,4 @@
 using CannaWatch.Markets.Sqdc.Implementation;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
 using SqdcWatcher.Infrastructure.Abstractions;
@@ -9,7 +8,8 @@ using XFactory.SqdcWatcher.Core.DataMapping;
 using XFactory.SqdcWatcher.Core.Interfaces;
 using XFactory.SqdcWatcher.Core.Services;
 
-namespace CannaWatch.Markets.Sqdc
+// ReSharper disable once CheckNamespace
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static class DependencyInjectionExtensions
     {

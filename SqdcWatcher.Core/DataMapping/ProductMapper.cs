@@ -18,6 +18,10 @@ namespace XFactory.SqdcWatcher.Core.DataMapping
             destination.Title = source.Title;
             destination.Url = source.Url;
             destination.Brand = source.Brand;
+            destination.Strain = source.Strain;
+            destination.CannabisType = source.CannabisType;
+            destination.ProducerName = source.ProducerName;
+            destination.LevelTwoCategory = source.LevelTwoCategory;
             return destination;
         }
 

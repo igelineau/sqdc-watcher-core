@@ -48,9 +48,12 @@ namespace XFactory.SqdcWatcher.Data.Entities.Products
 
         public bool IsInStock() => Variants.Any(v => v.InStock);
 
-        public void AddVariant(ProductVariant.ProductVariant productVariant)
+        public void AddVariant(ProductVariant.ProductVariant variant)
         {
-            variants.Add(productVariant);
+            if (!Variants.Contains(variant))
+            {
+                variants.Add(variant);
+            }
         }
 
         private bool Equals(Product other)
