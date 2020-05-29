@@ -2,7 +2,7 @@ using System.Text;
 using System.Text.Json;
 using RestClient.Net.Abstractions;
 
-namespace XFactory.SqdcWatcher.Core.Services
+namespace XFactory.SqdcWatcher.Core.Serialization
 {
     public class NativeJsonSerializationAdapter : ISerializationAdapter
     {

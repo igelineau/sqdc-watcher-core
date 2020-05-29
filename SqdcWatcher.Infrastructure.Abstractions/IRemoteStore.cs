@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace SqdcWatcher.Infrastructure.Abstractions
 {
-    public interface IRemoteStore<TMarketFacade, out TData>
+    public interface IRemoteStore<out TMarketFacade, out TData>
         where TMarketFacade : IMarketFacade
         where TData : class
     {

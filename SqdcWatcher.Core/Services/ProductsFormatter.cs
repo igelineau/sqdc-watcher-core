@@ -9,8 +9,6 @@ namespace XFactory.SqdcWatcher.Core.Services
 {
     public static class ProductsFormatter
     {
-        private const int StrainMaxWidth = 25;
-
         public static void WriteProductsTableToConsole(IEnumerable<Product> products)
         {
             var headerThickness = new LineThickness(LineWidth.Double, LineWidth.Single);
@@ -52,7 +50,7 @@ namespace XFactory.SqdcWatcher.Core.Services
 
         public static string FormatForSlackTable(IEnumerable<Product> products)
         {
-            StringBuilder builder = new StringBuilder();
+            var builder = new StringBuilder();
             foreach (Product product in products)
             {
                 string variantsAvailable = FormatVariantsAvailable(product);
@@ -64,28 +62,11 @@ namespace XFactory.SqdcWatcher.Core.Services
             return builder.ToString();
         }
 
-        private static string FormatName(Product product)
-        {
-            string name = product.Title;
-            string strain = LimitLength(product.Strain, StrainMaxWidth);
-            string finalName;
-            if (string.IsNullOrEmpty(strain) || strain.Equals(name, StringComparison.OrdinalIgnoreCase))
-            {
-                finalName = name;
-            }
-            else
-            {
-                finalName = strain.IndexOf(',') > -1 ? $"{name} ({strain})" : $"{strain} ({name})";
-            }
-
-            return finalName;
-        }
-
         private static string FormatBrandAndSupplier(Product product)
         {
             var components = new List<string>();
-            string producerName = product.ProducerName;
-            string brand = product.Brand;
+            string producerName = product.ProducerName ?? string.Empty;
+            string brand = product.Brand ?? string.Empty;
 
             if (ShouldDisplayBrand(brand))
             {

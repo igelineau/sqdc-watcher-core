@@ -6,8 +6,8 @@ using AutoMapper;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
 using XFactory.SqdcWatcher.Core.Abstractions;
 using XFactory.SqdcWatcher.Core.Caching;
+using XFactory.SqdcWatcher.Core.DataMapping;
 using XFactory.SqdcWatcher.Core.Interfaces;
-using XFactory.SqdcWatcher.Core.Mappers;
 using XFactory.SqdcWatcher.Core.MappingFilters;
 using XFactory.SqdcWatcher.Core.Services;
 using XFactory.SqdcWatcher.Data.Entities.Products;
@@ -43,9 +43,9 @@ namespace Microsoft.Extensions.DependencyInjection
             }));
         }
 
-        private static void AddGenericOpenTypeTransient(this IServiceCollection collection, Type baseType)
+        public static void AddGenericOpenTypeTransient(this IServiceCollection collection, Type baseType)
         {
-            IEnumerable<Type> typesToAdd = Assembly.GetExecutingAssembly()
+            IEnumerable<Type> typesToAdd = Assembly.GetCallingAssembly()
                 .GetTypes()
                 .Where(t => !t.IsAbstract && FindBaseType(t, baseType) != null);
             foreach (Type type in typesToAdd)

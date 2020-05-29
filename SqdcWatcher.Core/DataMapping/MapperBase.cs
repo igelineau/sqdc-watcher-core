@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using XFactory.SqdcWatcher.Core.MappingFilters;
 
-namespace XFactory.SqdcWatcher.Core.Mappers
+namespace XFactory.SqdcWatcher.Core.DataMapping
 {
     public abstract class MapperBase<TSource, TDest> : IMapper<TSource, TDest>
     {
@@ -13,7 +13,7 @@ namespace XFactory.SqdcWatcher.Core.Mappers
             this.mappingFilters = mappingFilters.ToList().AsReadOnly();
         }
 
-        public TDest Map(TSource source, TDest existingDest)
+        public TDest MapCreateOrUpdate(TSource source, TDest existingDest)
         {
             existingDest ??= CreateDestinationInstance(source);
 

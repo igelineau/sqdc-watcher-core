@@ -4,7 +4,7 @@ using SqdcWatcher.DataTransferObjects.RestApiModels;
 using XFactory.SqdcWatcher.Core.MappingFilters;
 using XFactory.SqdcWatcher.Data.Entities.Products;
 
-namespace XFactory.SqdcWatcher.Core.Mappers
+namespace XFactory.SqdcWatcher.Core.DataMapping
 {
     [UsedImplicitly]
     public class ProductMapper : MapperBase<ProductDto, Product>

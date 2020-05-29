@@ -108,5 +108,10 @@ namespace XFactory.SqdcWatcher.Data.Entities.ProductVariant
 
             return StockStatusChangeResult.NotChanged;
         }
+
+        public bool IsNew()
+        {
+            return Id == 0;
+        }
     }
 }

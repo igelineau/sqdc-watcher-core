@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using SqdcWatcher.DataTransferObjects.DomainDto;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
+using XFactory.SqdcWatcher.Core.DataMapping;
 using XFactory.SqdcWatcher.Core.MappingFilters;
 using XFactory.SqdcWatcher.Core.Utils;
 using XFactory.SqdcWatcher.Data.Entities.ProductVariant;
 
-namespace XFactory.SqdcWatcher.Core.Mappers
+namespace CannaWatch.Markets.Sqdc.Mapping
 {
     [UsedImplicitly]
     public class VariantPricesMapper : MapperBase<ProductVariantPrice, ProductVariant>

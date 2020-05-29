@@ -5,6 +5,7 @@ using SqdcWatcher.DataTransferObjects.RestApiModels;
 using SqdcWatcher.Infrastructure.Abstractions;
 using XFactory.SqdcWatcher.Core.Caching;
 using XFactory.SqdcWatcher.Core.Configuration;
+using XFactory.SqdcWatcher.Core.DataMapping;
 using XFactory.SqdcWatcher.Core.Interfaces;
 using XFactory.SqdcWatcher.Core.Services;
 
@@ -17,11 +18,14 @@ namespace CannaWatch.Markets.Sqdc
             // Public API
             services.AddTransient<SqdcMarketFacade>();
             services.AddTransient<IMarketFacade, SqdcMarketFacade>();
+            services.AddTransient<IMarketScanService, SqdcMarketFacade>();
             services.AddFactory<IScanOperation, ScanOperation<SqdcMarketFacade>>();
             
             services.AddTransient<SqdcRestApiClient>();
             services.AddTransient<SqdcHtmlParser>();
             services.AddTransient<SqdcProductsFetcher>();
+            
+            services.AddGenericOpenTypeTransient(typeof(IMapper<,>));
             
             services.AddTransient<IRemoteStore<SqdcMarketFacade, ProductDto>>(ctx =>
             {
