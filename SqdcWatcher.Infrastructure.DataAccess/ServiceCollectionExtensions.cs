@@ -22,7 +22,8 @@ namespace Microsoft.Extensions.DependencyInjection
             where TImplementation : class, TService
         {
             services.AddTransient<TService, TImplementation>();
-            services.AddScoped<Func<TService>>(x => x.GetService<TService>);
+            services.AddTransient<TImplementation>();
+            services.AddScoped<Func<TService>>(x => x.GetService<TImplementation>);
         }
     }
 }

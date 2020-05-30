@@ -14,24 +14,24 @@ using XFactory.SqdcWatcher.Data.Entities.ProductVariant;
 
 namespace CannaWatch.Markets.CannaFarms.Implementation
 {
-    public class CannaFarmsScanService : IMarketScanService, IMarketFacade
+    public class CannaFarmsScanService : IMarketScanService, IRemoteProductsStore<CannaFarmsScanService>
     {
         private readonly CannaFarmsRestClient restClient;
         private Dictionary<string, CannaFarmProduct> productsList;
-
-        public MarketIdentity MarketIdentity => new MarketIdentity("CannaFarms");
 
         public CannaFarmsScanService(CannaFarmsRestClient restClient)
         {
             this.restClient = restClient;
         }
 
-        public async IAsyncEnumerable<ProductDto> GetAllProductsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        public string GetMarketId() => "CA.CANNAFARMS";
+
+        public async IAsyncEnumerable<ProductDto> GetAllProductsAsync(Market market, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            productsList = (await restClient.GetPurchasableProducts()).ToDictionary(p => p.Id);
+            productsList = (await restClient.GetPurchasableProductsAsync()).ToDictionary(p => p.Id);
             foreach (CannaFarmProduct product in productsList.Values)
             {
-                yield return product.MapToDto();
+                yield return product.MapToDto(market);
             }
         }
 
@@ -58,7 +58,7 @@ namespace CannaWatch.Markets.CannaFarms.Implementation
 
         public Task<List<long>> GetInventoryItems(IEnumerable<long> variantsIds, CancellationToken cancelToken)
         {
-            IEnumerable<long> skuInStock = productsList.Values
+            IEnumerable<long> skuInStock = productsList == null ? Enumerable.Empty<long>() : productsList.Values
                 .SelectMany(p => p.Skus)
                 .Where(sku => sku.InStock)
                 .Select(sku => sku.Id);

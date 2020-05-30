@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Ardalis.GuardClauses;
 using JetBrains.Annotations;
+using XFactory.SqdcWatcher.Data.Entities.Markets;
 
 namespace XFactory.SqdcWatcher.Data.Entities.Products
 {
@@ -16,9 +18,10 @@ namespace XFactory.SqdcWatcher.Data.Entities.Products
             variants = new List<ProductVariant.ProductVariant>();
         }
 
-        public Product(string id) : this()
+        public Product(string id, string marketId) : this()
         {
             Id = id;
+            SetMarketId(marketId);
             IsNew = true;
         }
 
@@ -27,6 +30,10 @@ namespace XFactory.SqdcWatcher.Data.Entities.Products
         public string Title { get; set; }
 
         public string Url { get; set; }
+
+        public string MarketId { get; private set; }
+
+        public Market Market { get; private set; }
 
         public IEnumerable<ProductVariant.ProductVariant> Variants => variants;
 
@@ -48,12 +55,16 @@ namespace XFactory.SqdcWatcher.Data.Entities.Products
 
         public bool IsInStock() => Variants.Any(v => v.InStock);
 
-        public void AddVariant(ProductVariant.ProductVariant variant)
+        public bool AddVariant(ProductVariant.ProductVariant variant)
         {
+            bool wasAdded = false;
             if (!Variants.Contains(variant))
             {
                 variants.Add(variant);
+                wasAdded = true;
             }
+
+            return wasAdded;
         }
 
         private bool Equals(Product other)
@@ -79,6 +90,13 @@ namespace XFactory.SqdcWatcher.Data.Entities.Products
         public override int GetHashCode()
         {
             return Id.GetHashCode();
+        }
+
+        public void SetMarketId(in string marketId)
+        {
+            Guard.Against.NullOrWhiteSpace(marketId, nameof(marketId));
+
+            MarketId = marketId;
         }
     }
 }

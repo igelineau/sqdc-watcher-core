@@ -10,10 +10,11 @@ using Microsoft.Extensions.Logging;
 using RestSharp;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
 using SqdcWatcher.Infrastructure.Abstractions;
+using XFactory.SqdcWatcher.Data.Entities.Markets;
 
 namespace CannaWatch.Markets.Sqdc.Implementation
 {
-    public class SqdcProductsFetcher : SqdcHttpClientBase, IRemoteStore<SqdcMarketFacade, ProductDto>
+    public class SqdcProductsFetcher : SqdcHttpClientBase, IRemoteProductsStore<SqdcProductsFetcher>
     {
         private readonly ILogger<SqdcProductsFetcher> logger;
         private readonly SqdcHtmlParser sqdcHtmlParser;
@@ -27,7 +28,7 @@ namespace CannaWatch.Markets.Sqdc.Implementation
             sqdcHtmlParser = productHtmlParser;
         }
 
-        public async IAsyncEnumerable<ProductDto> GetAllItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<ProductDto> GetAllProductsAsync(Market market, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var completeList = new Dictionary<string, ProductDto>();
             int currentPage = 1;
@@ -41,6 +42,7 @@ namespace CannaWatch.Markets.Sqdc.Implementation
                 {
                     if (!completeList.ContainsKey(productDto.Id))
                     {
+                        productDto.MarketId = market.Id;
                         completeList.Add(productDto.Id, productDto);
                         yield return productDto;
                     }

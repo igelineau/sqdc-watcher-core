@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
+using XFactory.SqdcWatcher.Data.Entities.Markets;
 
 namespace CannaWatch.Markets.CannaFarms.Models
 {
@@ -19,7 +20,7 @@ namespace CannaWatch.Markets.CannaFarms.Models
         
         public List<CannaFarmProductVariant> Skus { get; set; }
 
-        public ProductDto MapToDto()
+        public ProductDto MapToDto(Market market)
         {
             string url = $"https://shop.cannafarms.ca/#/shop/product/{Id}";
             return new ProductDto(Id, url)
@@ -28,7 +29,8 @@ namespace CannaWatch.Markets.CannaFarms.Models
                 Brand = ProductTagNames?.FirstOrDefault(),
                 ProducerName = "CannaFarms",
                 Strain = ProductStrainName,
-                LevelTwoCategory = ProductTypeName
+                LevelTwoCategory = ProductTypeName,
+                MarketId = market.Id
             };
         }
     }

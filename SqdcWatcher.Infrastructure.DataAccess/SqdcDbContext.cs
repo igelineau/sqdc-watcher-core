@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.Extensions.Hosting;
 using XFactory.SqdcWatcher.Data.Entities.Common;
 using XFactory.SqdcWatcher.Data.Entities.History;
+using XFactory.SqdcWatcher.Data.Entities.Markets;
 using XFactory.SqdcWatcher.Data.Entities.Products;
 using XFactory.SqdcWatcher.Data.Entities.ProductVariant;
 
@@ -39,6 +40,8 @@ namespace XFactory.SqdcWatcher.DataAccess
         public DbSet<StockHistory> StockHistory { get; set; }
 
         public DbSet<PriceHistory> PriceHistory { get; set; }
+
+        public DbSet<Market> Markets { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -88,8 +91,10 @@ namespace XFactory.SqdcWatcher.DataAccess
                 .Property(p => p.Id)
                 .ValueGeneratedNever();
 
+            modelBuilder.Entity<Market>();
+
             EntityTypeBuilder<ProductVariant> productVariants = modelBuilder.Entity<ProductVariant>();
-            productVariants.Ignore(pv => pv.MetaData);
+            productVariants.Ignore(pv => pv.IsNew);
             productVariants.Property(pv => pv.Id).ValueGeneratedNever();
         }
     }

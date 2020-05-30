@@ -15,6 +15,7 @@ namespace XFactory.SqdcWatcher.Core.DataMapping
 
         protected override Product PerformMapping(ProductDto source, Product destination)
         {
+            destination.SetMarketId(source.MarketId);
             destination.Title = source.Title;
             destination.Url = source.Url;
             destination.Brand = source.Brand;
@@ -25,6 +26,6 @@ namespace XFactory.SqdcWatcher.Core.DataMapping
             return destination;
         }
 
-        protected override Product CreateDestinationInstance(ProductDto source) => new Product(source.Id);
+        protected override Product CreateDestinationInstance(ProductDto source) => new Product(source.Id, source.MarketId);
     }
 }

@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CannaWatch.Markets.CannaFarms.Models;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using RestSharp;
+using RestSharp.Serializers.NewtonsoftJson;
 
 
 namespace CannaWatch.Markets.CannaFarms.HttpClient
@@ -13,7 +16,7 @@ namespace CannaWatch.Markets.CannaFarms.HttpClient
         private readonly Uri baseDomain = new Uri("https://ample.cannafarms.ca:3000");
         private const string BaseApiPath = "v1/portal/clients";
         
-        private readonly RestClient client;
+        private readonly RestSharp.RestClient client;
 
         private int? clientId;
 
@@ -22,12 +25,19 @@ namespace CannaWatch.Markets.CannaFarms.HttpClient
             this.authenticator = authenticator;
             
             client = CreateRestClient(new Uri(baseDomain, BaseApiPath));
+            client.UseNewtonsoftJson(new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver
+                {
+                    NamingStrategy = new SnakeCaseNamingStrategy()
+                }
+            });
             AddDefaultHeaders();
         }
 
-        private RestClient CreateRestClient(Uri baseApiUri)
+        private RestSharp.RestClient CreateRestClient(Uri baseApiUri)
         {
-            return new RestClient
+            return new RestSharp.RestClient
             {
                 BaseUrl = new Uri(baseApiUri.ToString()),
                 UserAgent = "CannaWatcher",
@@ -45,8 +55,8 @@ namespace CannaWatch.Markets.CannaFarms.HttpClient
             client.AddDefaultHeader("Accept", "application/json, text/javascript, */*; q=0.01");
             client.AddDefaultHeader("Content-Type", "application/json; charset=utf-8");
         }
-        
-        public async Task<List<CannaFarmProduct>> GetPurchasableProducts()
+
+        public async Task<List<CannaFarmProduct>> GetPurchasableProductsAsync()
         {
             if (clientId == null)
             {

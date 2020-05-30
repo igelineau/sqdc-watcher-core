@@ -8,11 +8,10 @@ using CannaWatch.Markets.Sqdc.HttpClient;
 using Microsoft.Extensions.Logging;
 using RestSharp;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
-using SqdcWatcher.Infrastructure.Abstractions;
 
 namespace CannaWatch.Markets.Sqdc.Implementation
 {
-    public class SqdcRestApiClient : SqdcHttpClientBase, IMarketDataFetcher
+    public class SqdcRestApiClient : SqdcHttpClientBase
     {
         private readonly ILogger<SqdcRestApiClient> logger;
 

@@ -13,7 +13,7 @@ namespace XFactory.SqdcWatcher.Data.Entities
 
         public static IEnumerable<ProductVariant.ProductVariant> GetNewVariants(this Product product)
         {
-            return product.Variants.Where(v => v.IsNew());
+            return product.Variants.Where(v => v.IsNew);
         }
     }
 }

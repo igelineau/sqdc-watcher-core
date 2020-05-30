@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using JetBrains.Annotations;
 using XFactory.SqdcWatcher.Data.Entities.History;
 
@@ -17,14 +16,19 @@ namespace XFactory.SqdcWatcher.Data.Entities.ProductVariant
 
         public ProductVariant(long id) : this()
         {
+            if (id <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(id), "Id must be greater than zero.");
+            }
             Id = id;
         }
 
         public long Id { get; private set; }
 
-        public ProductVariantMetaData MetaData { get; private set; } = new ProductVariantMetaData {WasFetched = false};
-
-        public bool HasMetaData => MetaData != null;
+        /// <summary>
+        /// Indicates if this entity was created from code (IsNew == true) or not. IsNew == false means it was created using the default, private constructor.
+        /// </summary>
+        public bool IsNew { get; }
 
         [Required] public string ProductId { get; set; }
 
@@ -70,21 +74,6 @@ namespace XFactory.SqdcWatcher.Data.Entities.ProductVariant
             return Equals((ProductVariant) obj);
         }
 
-        public override int GetHashCode()
-        {
-            return Id.GetHashCode();
-        }
-
-        internal bool HasSpecifications()
-        {
-            return Specifications.Any();
-        }
-
-        public void SetMetaData(ProductVariantMetaData metaData)
-        {
-            MetaData = metaData;
-        }
-
         public StockStatusChangeResult SetStockStatus(bool isInStock)
         {
             bool hasChangedToInStock = !InStock && isInStock;
@@ -109,9 +98,9 @@ namespace XFactory.SqdcWatcher.Data.Entities.ProductVariant
             return StockStatusChangeResult.NotChanged;
         }
 
-        public bool IsNew()
+        public override int GetHashCode()
         {
-            return Id == 0;
+            return Id.GetHashCode();
         }
     }
 }

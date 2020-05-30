@@ -13,9 +13,9 @@ namespace SqdcWatcher.Infrastructure.Abstractions
     /// </summary>
     public interface IMarketScanService
     {
-        MarketIdentity MarketIdentity { get; }
+        string GetMarketId();
         
-        IAsyncEnumerable<ProductDto> GetAllProductsAsync(CancellationToken cancellationToken);
+        IAsyncEnumerable<ProductDto> GetAllProductsAsync(Market market, CancellationToken cancellationToken);
         
         Task<List<long>> GetInventoryItems(IEnumerable<long> variantsIds, CancellationToken cancelToken);
         

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 
 namespace CannaWatch.Markets.CannaFarms.Models
@@ -11,7 +12,10 @@ namespace CannaWatch.Markets.CannaFarms.Models
             Password = password;
         }
 
+        [JsonPropertyName("client_id")]
         public string ClientId { get; }
+        
+        [JsonPropertyName("password")]
         public string Password { get; }
     }
 }

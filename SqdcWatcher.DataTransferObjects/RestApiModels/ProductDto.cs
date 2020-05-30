@@ -12,6 +12,9 @@ namespace SqdcWatcher.DataTransferObjects.RestApiModels
         }
 
         public string Id { get; private set; }
+
+        public string MarketId { get; set; }
+        
         public string Title { get; set; }
         public string Url { get; set; }
 

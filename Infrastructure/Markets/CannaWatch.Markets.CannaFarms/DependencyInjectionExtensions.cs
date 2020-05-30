@@ -1,43 +1,39 @@
 using CannaWatch.Markets.CannaFarms.Configuration;
 using CannaWatch.Markets.CannaFarms.HttpClient;
 using CannaWatch.Markets.CannaFarms.Implementation;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using SqdcWatcher.Infrastructure.Abstractions;
+using XFactory.SqdcWatcher.Core.Caching;
+using XFactory.SqdcWatcher.Core.Interfaces;
+using XFactory.SqdcWatcher.Core.Services;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
 {
+    [PublicAPI]
     public static class DependencyInjectionExtensions
     {
         public static IServiceCollection AddCannaWatchCannaFarmsMarket(this IServiceCollection services, IConfiguration config)
         {
             services.Configure<CannaFarmsOptions>(config.GetSection("Markets:CannaFarms"));
             
-            // Public API
+            services.AddTransient<CannaFarmsScanService>();
             services.AddTransient<IMarketScanService, CannaFarmsScanService>();
-            services.AddTransient<IMarketFacade, CannaFarmsScanService>();
+            services.AddFactory<IScanOperation, ScanOperation<CannaFarmsScanService>>();
+            services.AddTransient<IRemoteProductsStore<CannaFarmsScanService>, CannaFarmsScanService>();
+            
             services.AddTransient<CannaFarmsRestClient>();
             services.AddTransient<CannaFarmsAuthenticator>();
-            
-            // services.AddTransient<IMarketFacade, SqdcMarketFacade>();
-            // services.AddTransient<IMarketScanService, SqdcMarketFacade>();
-            // services.AddFactory<IScanOperation, ScanOperation<SqdcMarketFacade>>();
-            //
-            // services.AddTransient<SqdcRestApiClient>();
-            // services.AddTransient<SqdcHtmlParser>();
-            // services.AddTransient<SqdcProductsFetcher>();
-            //
-            // services.AddGenericOpenTypeTransient(typeof(IMapper<,>));
-            //
-            // services.AddTransient<IRemoteStore<SqdcMarketFacade, ProductDto>>(ctx =>
-            // {
-            //     var sqdcConfiguration = ctx.GetRequiredService<IOptions<SqdcConfiguration>>();
-            //     return sqdcConfiguration.Value.UseProductsHtmlCaching
-            //         ? (IRemoteStore<SqdcMarketFacade, ProductDto>) ctx.GetRequiredService<ProductsFileCacheProxy<SqdcMarketFacade, SqdcProductsFetcher>>()
-            //         : ctx.GetRequiredService<SqdcProductsFetcher>();
-            // });
 
             return services;
         }
+        
+        public static IServiceCollection AddCannaFarmsProductsFileCache(this IServiceCollection serviceCollection)
+        {
+            serviceCollection.AddTransient<IRemoteProductsStore<CannaFarmsScanService>, ProductsFileCacheProxy<CannaFarmsScanService>>();
+            return serviceCollection;
+        }
+        
     }
 }

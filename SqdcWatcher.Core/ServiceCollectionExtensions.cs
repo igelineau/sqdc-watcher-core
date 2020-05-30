@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static void AddCannaWatch(this IServiceCollection services)
         {
             services.AddScoped<ISqdcWatcher, MarketsWatcher>();
-
+            
             services.AddSqdcAutoMapper();
             services.AddSqdcWatcherDbContext();
             
@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddGenericOpenTypeTransient(typeof(IMappingFilter<,>));
 
             services.AddScoped<BecameInStockTriggerPolicy>();
-            services.AddTransient(typeof(ProductsFileCacheProxy<,>));
+            services.AddTransient(typeof(ProductsFileCacheProxy<>));
         }
         
         private static void AddSqdcAutoMapper(this IServiceCollection collection)

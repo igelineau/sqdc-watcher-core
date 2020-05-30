@@ -10,13 +10,14 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Hosting;
 using SqdcWatcher.DataTransferObjects.RestApiModels;
 using SqdcWatcher.Infrastructure.Abstractions;
+using XFactory.SqdcWatcher.Core.Utils;
+using XFactory.SqdcWatcher.Data.Entities.Markets;
 
 namespace XFactory.SqdcWatcher.Core.Caching
 {
     [UsedImplicitly]
-    public class ProductsFileCacheProxy<TMarketFacade, TInnerService> : DefaultCachingProxy<TMarketFacade, ProductDto, TInnerService>
-        where TInnerService : class, IRemoteStore<TMarketFacade, ProductDto>
-        where TMarketFacade : IMarketFacade
+    public class ProductsFileCacheProxy<TInnerService> : DefaultCachingProxy<TInnerService>
+        where TInnerService : IRemoteProductsStore<TInnerService>
     {
         private readonly string productsCacheFile;
 
@@ -28,7 +29,7 @@ namespace XFactory.SqdcWatcher.Core.Caching
                 $"products-cache{hostEnvironment.EnvironmentName}.json");
         }
 
-        public override async IAsyncEnumerable<ProductDto> GetAllItemsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        public override async IAsyncEnumerable<ProductDto> GetAllProductsAsync(Market market, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             bool isCachedDataAvailable = IsCachedDataAvailable();
             bool persistedCacheExists = PersistedCacheExists();
@@ -41,7 +42,7 @@ namespace XFactory.SqdcWatcher.Core.Caching
             }
             else
             {
-                productsEnumerable = base.GetAllItemsAsync(cancellationToken);
+                productsEnumerable = base.GetAllProductsAsync(market, cancellationToken);
             }
 
             var productsToPersist = new List<ProductDto>();

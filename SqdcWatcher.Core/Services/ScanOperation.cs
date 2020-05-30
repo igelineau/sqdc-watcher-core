@@ -15,9 +15,9 @@ using XFactory.SqdcWatcher.Core.Abstractions;
 using XFactory.SqdcWatcher.Core.DataMapping;
 using XFactory.SqdcWatcher.Core.Interfaces;
 using XFactory.SqdcWatcher.Core.Utils;
-using XFactory.SqdcWatcher.Data.Entities;
 using XFactory.SqdcWatcher.Data.Entities.Common;
 using XFactory.SqdcWatcher.Data.Entities.History;
+using XFactory.SqdcWatcher.Data.Entities.Markets;
 using XFactory.SqdcWatcher.Data.Entities.Products;
 using XFactory.SqdcWatcher.Data.Entities.ProductVariant;
 using XFactory.SqdcWatcher.DataAccess;
@@ -25,14 +25,14 @@ using XFactory.SqdcWatcher.DataAccess;
 namespace XFactory.SqdcWatcher.Core.Services
 {
     [UsedImplicitly]
-    public class ScanOperation<TMarketFacade> : IScanOperation
-        where TMarketFacade : IMarketFacade
+    public class ScanOperation<TMarketService> : IScanOperation
+        where TMarketService : IMarketScanService
     {
         private readonly TimeSpan refreshProductsListInterval = TimeSpan.FromMinutes(30);
         private readonly Dictionary<string, Product> localProducts = new Dictionary<string, Product>();
         private readonly List<Product> newProducts = new List<Product>();
 
-        private readonly ILogger<ScanOperation<TMarketFacade>> logger;
+        private readonly ILogger<ScanOperation<TMarketService>> logger;
         private readonly Func<SqdcDbContext> dbContextFactory;
         private readonly ProductMapper productMapper;
         private readonly IEnumerable<VisitorBase<Product>> productVisitors;
@@ -43,11 +43,12 @@ namespace XFactory.SqdcWatcher.Core.Services
 
         private bool mustUpdateProductsList;
         private readonly IMarketScanService marketScanService;
+        private Market market;
 
         public ScanOperation(
-            IMarketScanService marketScanService,
+            TMarketService marketScanService,
             Func<SqdcDbContext> dbContextFactory,
-            ILogger<ScanOperation<TMarketFacade>> logger,
+            ILogger<ScanOperation<TMarketService>> logger,
             ISlackClient slackPostClient,
             ProductMapper productMapper,
             IEnumerable<VisitorBase<Product>> productVisitors)
@@ -78,7 +79,8 @@ namespace XFactory.SqdcWatcher.Core.Services
 
         private async Task PrepareExecution(bool forceProductsRefresh)
         {
-            logger.LogInformation($"Preparing to run ScanOperation for market {marketScanService.MarketIdentity.Name}");
+            market = await dbContext.Markets.FirstOrDefaultAsync(m => m.Id == marketScanService.GetMarketId());
+            logger.LogInformation($"Preparing scanner: {market.Name}");
             appState = await dbContext.AppState.AsTracking().FirstOrDefaultAsync() ?? new AppState();
 
             TimeSpan timeSinceLastProductsRefresh = DateTime.Now - (appState.LastProductsListRefresh ?? DateTime.MinValue);
@@ -167,9 +169,10 @@ namespace XFactory.SqdcWatcher.Core.Services
         {
             IAsyncEnumerable<Product> query = dbContext.Products
                 .AsTracking()
+                .Where(p => p.MarketId == market.Id)
                 .Include(p => p.Variants).ThenInclude(v => v.Specifications)
                 .AsAsyncEnumerable();
-            await foreach (Product product in query.AsAsyncEnumerable().WithCancellation(cancellationToken))
+            await foreach (Product product in query.WithCancellation(cancellationToken))
             {
                 localProducts.Add(product.Id, product);
             }
@@ -181,7 +184,7 @@ namespace XFactory.SqdcWatcher.Core.Services
             {
                 logger.LogInformation("Refreshing local products list...");
                 var sw = Stopwatch.StartNew();
-                await foreach (ProductDto productDto in marketScanService.GetAllProductsAsync(cancellationToken))
+                await foreach (ProductDto productDto in marketScanService.GetAllProductsAsync(market, cancellationToken))
                 {
                     await AddProductIfNew(cancellationToken, productDto);
                 }
@@ -217,16 +220,12 @@ namespace XFactory.SqdcWatcher.Core.Services
                     await marketScanService.UpdateProductVariants(product, cancelToken);
                 }
 
-                Dictionary<Product, IEnumerable<ProductVariant>> newVariantsGroupedByProduct = localProducts.Values.ToDictionary(
-                    p => p,
-                    p => p.GetNewVariants());
-                foreach((Product product, IEnumerable<ProductVariant> variants) in newVariantsGroupedByProduct)
+                foreach(ProductVariant variant in localProducts.Values.SelectMany(p => p.Variants))
                 {
-                    foreach (ProductVariant productVariant in variants)
+                    EntityEntry<ProductVariant> entry = dbContext.Entry(variant);
+                    if (entry.State == EntityState.Detached)
                     {
-                        productVariant.ProductId ??= product.Id;
-                        await dbContext.ProductVariants.AddAsync(productVariant, cancelToken);
-                        product.AddVariant(productVariant);
+                        await dbContext.ProductVariants.AddAsync(variant, cancelToken);
                     }
                 }
             }
@@ -239,7 +238,6 @@ namespace XFactory.SqdcWatcher.Core.Services
                 .Where(pv => !pv.Specifications.Any());
             foreach (ProductVariant variant in variantsWithoutSpecs)
             {
-                logger.LogInformation($"Fetching specifications for productId={variant.ProductId}, variantId={variant.Id}");
                 try
                 {
                     await marketScanService.UpdateVariantSpecifications(variant, cancellationToken);

@@ -6,16 +6,23 @@ using JetBrains.Annotations;
 namespace XFactory.SqdcWatcher.Data.Entities.Markets
 {
     [PublicAPI]
-    public class MarketIdentity : ValueObject
+    public abstract class MarketIdentity : ValueObject
     {
-        public MarketIdentity(string name)
+        protected MarketIdentity(string key, string displayName)
         {
-            Guard.Against.NullOrWhiteSpace(name, nameof(name));
+            Guard.Against.NullOrWhiteSpace(key, nameof(key));
+            Guard.Against.NullOrWhiteSpace(displayName, nameof(displayName));
 
-            Name = name;
+            Key = key;
+            Name = displayName;
         }
         
         public string Name { get; private set; }
+
+        /// <summary>
+        /// The Key uniquely identifies a market. It will be used to fetch the Market entity from the database.
+        /// </summary>
+        public string Key { get; private set; }
         
         protected override IEnumerable<object> GetEqualityElements()
         {
