@@ -27,10 +27,10 @@ jobs:
         dotnet-version: '3.1.300'
 
     - name: Build with dotnet
-      run: dotnet build --configuration Release ${{ STARTUP_PROJECT_PATH }}
+      run: dotnet build --configuration Release ${{ env.STARTUP_PROJECT_PATH }}
 
     - name: dotnet publish
-      run: dotnet publish -c Release -o ${{ AZURE_WEBAPP_PACKAGE_PATH }} ${{ STARTUP_PROJECT_PATH }}
+      run: dotnet publish -c Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} ${{ env.STARTUP_PROJECT_PATH }}
 
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v1
@@ -38,4 +38,4 @@ jobs:
         app-name: 'cannawatch-worker'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_49e8bb31ec094e6ab78afda287416175 }}
-        package: ${{ AZURE_WEBAPP_PACKAGE_PATH }}
+        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
