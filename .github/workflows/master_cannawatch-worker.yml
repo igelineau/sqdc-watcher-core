@@ -11,7 +11,8 @@ on:
  
 env:
   AZURE_WEBAPP_NAME: 'CannaWatch Console'    # set this to your application's name
-  AZURE_WEBAPP_PACKAGE_PATH: './SqdcWatcher.Console' # set this to the path to your web app project, defaults to the repository root  DOTNET_VERSION: '2.2.402'
+  AZURE_WEBAPP_PACKAGE_PATH: './published' # set this to the path to your web app project, defaults to the repository root  DOTNET_VERSION: '2.2.402'
+  STARTUP_PROJECT_PATH: './SqdcWatcher.Console'  
 
 jobs:
   build-and-deploy:
@@ -26,10 +27,10 @@ jobs:
         dotnet-version: '3.1.300'
 
     - name: Build with dotnet
-      run: dotnet build --configuration Release
+      run: dotnet build --configuration Release ${{ STARTUP_PROJECT_PATH }}
 
     - name: dotnet publish
-      run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/cannawatch-console
+      run: dotnet publish -c Release -o ${{ AZURE_WEBAPP_PACKAGE_PATH }} ${{ STARTUP_PROJECT_PATH }}
 
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v1
@@ -37,4 +38,4 @@ jobs:
         app-name: 'cannawatch-worker'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_49e8bb31ec094e6ab78afda287416175 }}
-        package: ${{env.DOTNET_ROOT}}/cannawatch-console 
+        package: ${{ AZURE_WEBAPP_PACKAGE_PATH }}
