@@ -4,7 +4,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <runtimeIdentifiers>linux-x64</runtimeIdentifiers>
-    <AssemblyName>ConsoleApp</AssemblyName>
     <RootNamespace>XFactory.SqdcWatcher.ConsoleApp</RootNamespace>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
