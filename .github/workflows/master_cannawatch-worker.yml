@@ -7,11 +7,15 @@ on:
   push:
     branches:
       - master
+        
+env:
+  AZURE_WEBAPP_NAME: 'CannaWatch Console'    # set this to your application's name
+  AZURE_WEBAPP_PACKAGE_PATH: './SqdcWatcher.Console' # set this to the path to your web app project, defaults to the repository root  DOTNET_VERSION: '2.2.402'
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
     - uses: actions/checkout@master
 
@@ -24,7 +28,7 @@ jobs:
       run: dotnet build --configuration Release
 
     - name: dotnet publish
-      run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+      run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/cannawatch-console
 
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v1
@@ -32,4 +36,4 @@ jobs:
         app-name: 'cannawatch-worker'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_49e8bb31ec094e6ab78afda287416175 }}
-        package: ${{env.DOTNET_ROOT}}/myapp 
+        package: ${{env.DOTNET_ROOT}}/cannawatch-console 

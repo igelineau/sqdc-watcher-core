@@ -1,0 +1,5 @@
+#!/bin/bash
+
+pushd ./SqdcWatcher.Console
+DOTNET_ENVIRONMENT=development dotnet run
+popd
