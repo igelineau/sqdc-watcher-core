@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,12 +30,13 @@ namespace XFactory.SqdcWatcher.ConsoleApp
         {
             IConfiguration config = hostContext.Configuration;
             services.Configure<SqdcConfiguration>(config.GetSection("Sqdc"));
-            
+
             services.AddHostedService<SqdcWorkerService>();
             services.AddTransient<ConsoleInputInterface>();
 
-            services.AddCannaWatch();
+            services.AddCannaWatchCoreServices();
             services.AddCannaWatchSlack(config);
+            
             services.AddCannaWatchSqdcMarket();
             services.AddCannaWatchCannaFarmsMarket(config);
 

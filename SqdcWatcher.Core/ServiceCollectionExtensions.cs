@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
-        public static void AddCannaWatch(this IServiceCollection services)
+        public static void AddCannaWatchCoreServices(this IServiceCollection services)
         {
             services.AddScoped<ISqdcWatcher, MarketsWatcher>();
             
