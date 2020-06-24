@@ -30,12 +30,13 @@ namespace XFactory.SqdcWatcher.ConsoleApp
         {
             IConfiguration config = hostContext.Configuration;
             services.Configure<SqdcConfiguration>(config.GetSection("Sqdc"));
-            
+
             services.AddHostedService<SqdcWorkerService>();
             services.AddTransient<ConsoleInputInterface>();
 
-            services.AddCannaWatch();
+            services.AddCannaWatchCoreServices();
             services.AddCannaWatchSlack(config);
+            
             services.AddCannaWatchSqdcMarket();
             services.AddCannaWatchCannaFarmsMarket(config);
 
